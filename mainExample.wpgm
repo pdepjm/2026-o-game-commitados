@@ -1,11 +1,36 @@
-import wollok.game.*
+import wollok.game.*    
 
-import example.pepita
+import niveles.*  
 
-program PepitaGame {
-	game.title("Pepita")
-	game.height(10)
-	game.width(10)
 
-	game.start()
+program cafeteriaApuros{
+	
+	var nivel = nivel1 // Comienza con nivel1
+
+
+	// configuracion pantalla
+	game.width(16)
+    game.height(9)
+	game.cellSize(100)
+	
+	game.title("Cafetería En Apuros")
+
+
+	// pantalla de inicio
+
+	game.addVisual(imagenIntro)
+	game.addVisual(botonIntro)
+
+	// Cada vez que hago click le paso la posicion al metodo clickPantalla de nivel
+
+	game.onClickDo({ pos => nivel.clickPantalla(pos) })
+
+	// cada 1 segundo (1000) se ejecuta el bloque de acciones nivel.pasoUnSegundo()
+
+	game.onTick(1000, "tiempo", { nivel.pasoUnSegundo() })
+
+
+   //COMIENZA EL JUEGO
+	game.start()  
+
 }

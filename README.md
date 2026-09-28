@@ -41,7 +41,7 @@ Maria acaba de cursar una materia por la mañana y necesita comer algo antes de 
 ¡Necesita recibir su pedido antes que llegue el colectivo!
 
 
-## Nivel 3: Matias 👩
+## Nivel 3: Matias 👨
 
 ⏱️Tiempo: 10 segundos
 📋Pedido: Helado de crema oreo y Banana Split + Jarabe de Chocolate🍦🍪🍫 .

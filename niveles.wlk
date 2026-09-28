@@ -86,10 +86,10 @@ class Nivel {
     var tiempo = 30
     const segundos = 30
 
-    const property cliente
+    const cliente
     const property listaIngredientes
-    const property pedidoCorrecto
-    const property pedidoFueraDeTiempo
+    const pedidoCorrecto
+    const pedidoFueraDeTiempo
 
     method clickPantalla(posicion) { 
     
@@ -111,12 +111,16 @@ class Nivel {
 
     method recibirIngrediente(ingrediente) { 
         
-        cliente.recibirIngredientes(ingrediente) 
+        cliente.recibirIngredientes(ingrediente, self) 
         
         }
 
     method descontarTiempo() {
-        tiempo = tiempo - 1
+        self.restarTiempo(1)
+    }
+
+    method restarTiempo(cantidad) {
+        tiempo = tiempo - cantidad
         if (tiempo <= 0) {
             self.terminarNivel(estadoSinTiempo, pedidoFueraDeTiempo, botonReintentar)
         }
@@ -139,7 +143,10 @@ class Nivel {
     method empezar() {
         game.removeVisual(imagenIntro)
         game.removeVisual(botonIntro)
+        self.iniciarPartida()
+    }
 
+    method iniciarPartida() {
         estado = estadoJugando
         tiempo = segundos
 
@@ -167,7 +174,7 @@ class Nivel {
         game.removeVisual(pedidoFueraDeTiempo)
         game.removeVisual(botonReintentar)
         cliente.reiniciar()
-        self.empezar()
+        self.iniciarPartida()
     }
 
 }

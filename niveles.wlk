@@ -1,182 +1,180 @@
-
 import wollok.game.*    
 import ingredientes.*
 import clientes.*
 
-
-object imagenIntro{
-
-    // Posicion
+// INTRO
+object imagenIntro {
     method position() = game.origin()
-
-    // Imagen: Intro 
     method image() = "fondos/Intro.png"
-
-
 }
 
 // BOTONES
-
-object botonIntro{
-
+object botonIntro {
     method position() = game.at(5, 1)
-  
     method image() = "botones/boton_Intro.png"
-
-
 }
 
-object botonEnviar{
-
+object botonEnviar {
     method position() = game.at(15, 1)
     method image() = "botones/boton_enviarPedido3.png"
 
-
+    method clickear(nivel) {
+        nivel.enviarPedido()
+    }
 }
 
-object botonSeguir{
-
+object botonSeguir {
     method position() = game.at(9, 0)
     method image() = "botones/boton_Seguir.png"
 
+    method clickear(nivel) {
+        nivel.siguienteNivel()
+    }
+
 }
 
-object botonReintentar{
-
+object botonReintentar {
     method position() = game.at(9, 0)
     method image() = "botones/boton_Reintentar.png"
-
+    
+    method clickear(nivel) {
+        nivel.reintentar() 
+    }
 }
 
-// PEDIDOS
-
-object pedidoCorrecto1{
-
+object pedidoCorrecto1 {
     method position() = game.origin()
     method image() = "juegor1/Pedido_Correcto.png"
-
 }
 
-object pedidoFueraDeTiempo1{
-
+object pedidoFueraDeTiempo1 {
     method position() = game.origin()
     method image() = "juegor1/Pedido_SinTiempo.png"
-
 }
 
-///////////////////////// Nivel 1 //////////////////////////////////////7
 
-object nivel1 {
-    var estado = "intro"     // intro, jugando, correcto, sinTiempo
-    var tiempo = 30          // tiempo restante
-    const segundos = 30      // tiempo máximo
+object estadoIntro {
+    method procesarClick(nivel, posicion){ 
+        nivel.empezar() 
+        }   
+    method pasoUnSegundo(nivel) { }
+}
 
-    const property listaIngredientes = ingredientes1.lista()
-
-    // Método que recibe los clicks
-
-    method clickPantalla(posicion) {
-    if (estado == "intro") {
-        self.procesarIntro()
-    } else if (estado == "jugando") {
-        self.procesarJuego(posicion)
-    } else if (estado == "correcto") {
-        self.procesarCorrecto(posicion)
-    } else if (estado == "sinTiempo") {
-        self.procesarSinTiempo(posicion)
+object estadoJugando {
+    method procesarClick(nivel, posicion) {
+        nivel.clickearElemento(posicion, nivel.listaIngredientes() + [botonEnviar])
     }
+    method pasoUnSegundo(nivel) { nivel.descontarTiempo() }
+}
+
+object estadoSinTiempo {
+    method procesarClick(nivel, posicion) {
+        nivel.clickearElemento(posicion, [botonReintentar])
+    }
+    method pasoUnSegundo(nivel) { }
+}
+
+object estadoCorrecto {
+    method procesarClick(nivel, posicion) {
+        nivel.clickearElemento(posicion, [botonSeguir])
+    }
+    method pasoUnSegundo(nivel) { }
+}
+
+class Nivel {
+    var estado = estadoIntro
+    var tiempo = 30
+    const segundos = 30
+
+    const property cliente
+    const property listaIngredientes
+    const property pedidoCorrecto
+    const property pedidoFueraDeTiempo
+
+    method clickPantalla(posicion) { 
+    
+        estado.procesarClick(self, posicion) 
+        
+        }
+
+    method clickearElemento(posicion, elementos) {
+        elementos.forEach({ elemento =>
+            if (elemento.position() == posicion) elemento.clickear(self)
+        })
     }
 
-    //  Estados (Intro,Jugando,Correcto,Sin Tiempo)
+    method pasoUnSegundo() { 
+        
+        estado.pasoUnSegundo(self) 
+        
+        }
 
-    method procesarIntro() {
-        game.removeVisual(imagenIntro)
-        game.removeVisual(botonIntro)
-        self.empezar()
-    }
+    method recibirIngrediente(ingrediente) { 
+        
+        cliente.recibirIngredientes(ingrediente) 
+        
+        }
 
-    method procesarJuego(posicion) {
-
-            // si clickeo en boton enviar
-        if (posicion == botonEnviar.position()) {
-            if (estudiante.resultadoCorrecto()) { 
-                         // Pedido completo
-                self.terminarNivel("correcto", pedidoCorrecto1, botonSeguir)
-            } else { 
-                         // Pedido incompleto
-            game.say(estudianteMostrador, "Mi pedido está incompleto")
-            
-            }
-        } 
-              
-        else {   // si clikeo en ingredientes 
-
-            listaIngredientes.forEach({ ingrediente =>
-                if (ingrediente.position() == posicion) estudiante.recibirIngredientes(ingrediente)
-            })
+    method descontarTiempo() {
+        tiempo = tiempo - 1
+        if (tiempo <= 0) {
+            self.terminarNivel(estadoSinTiempo, pedidoFueraDeTiempo, botonReintentar)
         }
     }
 
-        // clickeo en botonSeguir de pedidoCorrecto1
-    method procesarCorrecto(posicion) {
-        if (posicion == botonSeguir.position()) {
-          //    INICIA NIVEL 2
-        }
-    }
-       // clickeo en botonReintentar SinTiempo
-    method procesarSinTiempo(posicion) {
-        if (posicion == botonReintentar.position()) {
-            self.reintentar()
+    method enviarPedido() {
+        if (cliente.resultadoCorrecto()) {
+            self.terminarNivel(estadoCorrecto, pedidoCorrecto, botonSeguir)
+        } else {
+            game.say(cliente.estudianteEnMostrador(), "Mi pedido está incompleto")
         }
     }
 
-    // --- Tiempo ---
-    method pasoUnSegundo() {
+    method siguienteNivel() {
 
-            // Se ejecuta cada segundo desde onTick
-        if (estado == "jugando") {
-            tiempo = tiempo - 1
-            if (tiempo <= 0) {
-                self.terminarNivel("sinTiempo", pedidoFueraDeTiempo1, botonReintentar)
-            }
-        }
+        // PASO AL NIVEL 2
+
     }
-
-    //  (Inicio,Fin,Reintentar)
 
     method empezar() {
-        estado = "jugando"
+        game.removeVisual(imagenIntro)
+        game.removeVisual(botonIntro)
+
+        estado = estadoJugando
         tiempo = segundos
 
         game.addVisual(mostrador)
-        game.addVisual(estudianteMostrador)
+        game.addVisual(cliente.estudianteEnMostrador())
         listaIngredientes.forEach({ ing => game.addVisual(ing) })
         game.addVisual(botonEnviar)
-        estudiante.hacerPedido()  
-
+        cliente.hacerPedido()
     }
 
     method terminarNivel(nuevoEstado, fondo, boton) {
         estado = nuevoEstado
-        
-        // limpiar pantalla
+
         game.removeVisual(mostrador)
-        game.removeVisual(estudianteMostrador)
+        game.removeVisual(cliente.estudianteEnMostrador())
         game.removeVisual(botonEnviar)
-        game.removeVisual(pedidoReferencia1)   
+        game.removeVisual(cliente.pedidoReferencia())
         listaIngredientes.forEach({ ing => game.removeVisual(ing) })
-        
-        // resultado y boton 
+
         game.addVisual(fondo)
         game.addVisual(boton)
-
     }
 
     method reintentar() {
-
-        game.removeVisual(pedidoFueraDeTiempo1)
+        game.removeVisual(pedidoFueraDeTiempo)
         game.removeVisual(botonReintentar)
-        estudiante.reiniciar()
-        self.empezar()  // reinicia nivel
+        cliente.reiniciar()
+        self.empezar()
     }
+
 }
+
+const nivel1 = new Nivel(
+    cliente = estudiante,
+    listaIngredientes = ingredientes1.lista(),
+    pedidoCorrecto = pedidoCorrecto1,
+    pedidoFueraDeTiempo = pedidoFueraDeTiempo1
+)

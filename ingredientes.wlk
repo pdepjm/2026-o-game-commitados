@@ -1,72 +1,30 @@
 import wollok.game.*    
 
-// Ingredientes Nivel 1
-object agua{
+class Ingrediente {
+    const nombreIngrediente
+    const rutaImagen
+    const posicion
 
-    method nombre() = "agua"
-    method image() = "juegor1/agua.png"
-    method position() = game.at(1, 0)
+    method nombre() = nombreIngrediente
+    method image() = rutaImagen
+    method position() = posicion
 
-
+    method clickear(nivel) {
+        nivel.recibirIngrediente(self)
+    }
 }
 
-object te{
+const agua = new Ingrediente(nombreIngrediente = "agua", rutaImagen = "juegor1/agua.png", posicion = game.at(1, 0))
+const te = new Ingrediente(nombreIngrediente = "te", rutaImagen = "juegor1/te.png", posicion = game.at(3, 0))
+const cafe = new Ingrediente(nombreIngrediente = "cafe", rutaImagen = "juegor1/cafe.png", posicion = game.at(5, 0))
+const gaseosa = new Ingrediente(nombreIngrediente = "gaseosa", rutaImagen = "juegor1/gaseosa.png", posicion = game.at(7, 0))
+const pan = new Ingrediente(nombreIngrediente = "pan", rutaImagen = "juegor1/pan.png", posicion = game.at(9, 0))
+const galletas = new Ingrediente(nombreIngrediente = "galletas", rutaImagen = "juegor1/galletas.png", posicion = game.at(11, 0))
+const medialunas = new Ingrediente(nombreIngrediente = "medialunas", rutaImagen = "juegor1/medialunas.png", posicion = game.at(12, 0))
 
-    method nombre() = "te"
-    method image() = "juegor1/te.png"
-    method position() = game.at(3, 0)
-
+object ingredientes1 {
+    const property lista = [agua, gaseosa, cafe, galletas, te, pan, medialunas]
 }
-
-object cafe{
-
-    method nombre() = "cafe"
-    method image() = "juegor1/cafe.png"
-    method position() = game.at(5, 0)
-
-}
-
-
-object gaseosa{
-
-    method nombre() = "gaseosa"
-    method image() = "juegor1/gaseosa.png"
-    method position() = game.at(7, 0)
-
-
-}
-
-object pan{
-
-    method nombre() = "pan"
-    method image() = "juegor1/pan.png"
-    method position() = game.at(9, 0)
-
-
-}
-
-object galletas {
-
-  method nombre() = "galletas"
-  method image() = "juego1/galletas.png"
-  method position() = game.at(11, 0)
-
-}
-object medialunas{
-
-    method nombre() = "medialunas"
-    method image() = "juegor1/medialunas.png"
-    method position() = game.at(12, 0)
-
-}
-
-object ingredientes1{
-
-    const property lista = [agua,gaseosa,cafe,galletas,te,pan,medialunas]
-
-}
-
 
 // Ingredientes Nivel 2
-
 // estaListo()

@@ -62,7 +62,7 @@ class Estudiante {
             entregado.add(ingrediente)
             self.decir("Bien")
         }
-    }
+    } // separar en metodos
 
     method reiniciar() {
         entregado.clear()
@@ -78,3 +78,8 @@ const estudiante = new Estudiante(
     estudianteEnMostrador = estudianteMostrador,
     pedidoReferencia = pedidoReferencia1
 )
+
+//Excepeciones
+// if (argumento del error){
+//  throw new DomainException(message = "No se puede hacer eso")
+//}

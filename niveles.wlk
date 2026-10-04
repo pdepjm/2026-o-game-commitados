@@ -53,7 +53,7 @@ object botonReiniciar {
 }
 
 
-// Pantalla de resultados (nuevo)
+// Pantalla de resultados
 class PantallaResultado {
     const rutaImagen
     method position() = game.origin()
@@ -100,7 +100,7 @@ object estadoCorrecto {
     method pasoUnSegundo(nivel) { }
 }
 
-//estado (nuevo) : si Click coincide con el boton de reiniciar, se reincia el juego completo 
+//estado nuevo : si Click coincide con el boton de reiniciar, se reincia el juego completo 
 
 object estadoFinal {
     method procesarClick(nivel, posicion) {

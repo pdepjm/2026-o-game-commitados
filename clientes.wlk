@@ -8,7 +8,7 @@ object mostrador {
     method image() = "fondos/fondo_Mostrador.png"
 }
 
-// Estudiantes sentados 
+// Estudiantes sentados
 class EstudianteSentado {
     const rutaImagen
     const posicion = game.at(6, 2)
@@ -22,7 +22,7 @@ const mariaMostrador      = new EstudianteSentado(rutaImagen = "juegor2/maria_Mo
 const matiasMostrador     = new EstudianteSentado(rutaImagen = "jugador3/matias_Mostrador.png")
 
 
-// Pedidos de referencias 
+// Pedidos de referencias
 class PedidoReferencia {
     const rutaImagen
     const posicion = game.at(8, 2)

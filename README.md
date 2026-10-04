@@ -9,19 +9,16 @@ El juego actualmente consta de 3 niveles, a medida que se avanza los pedidos se 
 
 ## 👥 Integrantes
 
--  Luis Augusto Ramirez Alvaro
-
--  Diego Nicolas Rodas Carhuanina
-
--  Néstor Emmanuel Farinella
-
--  Joan Mendieta
-
--  Guadalupe Asurmendi
+* Luis Augusto Ramirez Alvaro
+* Diego Nicolas Rodas Carhuanina
+* Néstor Emmanuel Farinella
+* Joan Mendieta
+* Guadalupe Asurmendi
 
 
 
 <h1 align="center">🎮 Niveles 🎮</h1>
+
 
 
 ## Nivel 1: El estudiante 🎓
@@ -41,7 +38,8 @@ Maria acaba de cursar una materia por la mañana y necesita comer algo antes de 
 ¡Necesita recibir su pedido antes que llegue el colectivo!
 
 
-## Nivel 3: Matias 👩
+
+## Nivel 3: Matias 👨
 
 ⏱️Tiempo: 10 segundos
 📋Pedido: Helado de crema oreo y Banana Split + Jarabe de Chocolate🍦🍪🍫 .
@@ -49,9 +47,4 @@ Maria acaba de cursar una materia por la mañana y necesita comer algo antes de 
 Matias esta en el receso, y como habia mucha gente en la cafeteria perdio casi todo su descando haciendo fila.
 
 ¡Ahora solo tiene 10 segundos para recibir su helado antes volver al aula⏰!
-
-
-
-
-
 

@@ -1,0 +1,93 @@
+import wollok.game.*
+import ingredientes.*
+import clientes.*
+import niveles.*
+
+object nivelDePrueba {
+    var restado = 0
+    method restarTiempo(cantidad) { restado = restado + cantidad }
+    method restado() = restado
+}
+
+describe "estudiante que pidio cafe y medialunas" {
+    const unEstudiante = new Estudiante(
+        pedido = [cafe, medialunas],
+        mensaje = "Hola",
+        personalidad = paciente,
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+
+    test "recien creado no tiene el pedido completo" {
+        assert.notThat(unEstudiante.resultadoCorrecto())
+    }
+
+    test "el pedido se completa cuando llega todo lo pedido" {
+        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unEstudiante.resultadoCorrecto())
+        unEstudiante.recibirIngredientes(medialunas, nivelDePrueba)
+        assert.that(unEstudiante.resultadoCorrecto())
+    }
+
+    test "recibir dos veces el mismo ingrediente no completa el pedido" {
+        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
+        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unEstudiante.resultadoCorrecto())
+    }
+
+    test "un ingrediente que no pidio no cuenta para el pedido" {
+        unEstudiante.recibirIngredientes(agua, nivelDePrueba)
+        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unEstudiante.resultadoCorrecto())
+    }
+
+    test "reiniciar limpia lo entregado" {
+        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
+        unEstudiante.recibirIngredientes(medialunas, nivelDePrueba)
+        unEstudiante.reiniciar()
+        assert.notThat(unEstudiante.resultadoCorrecto())
+    }
+}
+
+test "un estudiante exigente le resta 5 segundos al nivel al equivocarse" {
+    const unEstudiante = new Estudiante(
+        pedido = [cafe],
+        mensaje = "Hola",
+        personalidad = exigente,
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const nivelPropio = object {
+        var restado = 0
+        method restarTiempo(cantidad) { restado = cantidad }
+        method restado() = restado
+    }
+    unEstudiante.recibirIngredientes(agua, nivelPropio)
+    assert.equals(5, nivelPropio.restado())
+}
+
+test "un estudiante paciente no le resta tiempo al nivel al equivocarse" {
+    const unEstudiante = new Estudiante(
+        pedido = [cafe],
+        mensaje = "Hola",
+        personalidad = paciente,
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const nivelPropio = object {
+        var restado = 0
+        method restarTiempo(cantidad) { restado = cantidad }
+        method restado() = restado
+    }
+    unEstudiante.recibirIngredientes(agua, nivelPropio)
+    assert.equals(0, nivelPropio.restado())
+}
+
+test "un ingrediente clickeado se lo entrega al nivel" {
+    var recibido = null
+    const nivelFalso = object {
+        method recibirIngrediente(ingrediente) { recibido = ingrediente }
+    }
+    cafe.clickear(nivelFalso)
+    assert.equals(cafe, recibido)
+}

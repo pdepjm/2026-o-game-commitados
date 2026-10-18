@@ -1,64 +1,43 @@
 import wollok.game.*    
+import visuales.*
 import ingredientes.*
 import clientes.*
 import sonidos.*
 
 // INTRO
-object imagenIntro {
-    method position() = game.origin()
-    method image() = "fondos/Intro.png"
-}
+object imagenIntro inherits Visual(rutaImagen = "fondos/Intro.png", posicion = game.origin()) { }
+
+object botonIntro inherits Visual(rutaImagen = "botones/boton_Intro.png", posicion = game.at(5, 1)) { }
 
 // BOTONES
-object botonIntro {
-    method position() = game.at(5, 1)
-    method image() = "botones/boton_Intro.png"
-}
-
-object botonEnviar {
-    method position() = game.at(15, 1)
-    method image() = "botones/boton_enviarPedido3.png"
-
-    method clickear(nivel) {
+// Todos son Clickeable: heredan image() y position() y estan obligados a definir clickear(nivel).
+object botonEnviar inherits Clickeable(rutaImagen = "botones/boton_enviarPedido3.png", posicion = game.at(15, 1)) {
+    override method clickear(nivel) {
         nivel.enviarPedido()
     }
 }
 
-object botonSeguir {
-    method position() = game.at(9, 0)
-    method image() = "botones/boton_Seguir.png"
-
-    method clickear(nivel) {
+object botonSeguir inherits Clickeable(rutaImagen = "botones/boton_Seguir.png", posicion = game.at(9, 0)) {
+    override method clickear(nivel) {
         nivel.siguienteNivel()
     }
-
 }
 
-object botonReintentar {
-    method position() = game.at(9, 0)
-    method image() = "botones/boton_Reintentar.png"
-    
-    method clickear(nivel) {
+object botonReintentar inherits Clickeable(rutaImagen = "botones/boton_Reintentar.png", posicion = game.at(9, 0)) {
+    override method clickear(nivel) {
         nivel.reintentar() 
     }
 }
 
-object botonReiniciar {
-    method position() = game.at(5, 1)
-    method image() = "botones/boton_Reiniciar.png"  
-
-    method clickear(nivel) {
+object botonReiniciar inherits Clickeable(rutaImagen = "botones/boton_Reiniciar.png", posicion = game.at(5, 1)) {
+    override method clickear(nivel) {
         nivel.volverAlInicio()
     }
 }
 
 
-// Pantalla de resultados
-class PantallaResultado {
-    const rutaImagen
-    method position() = game.origin()
-    method image() = rutaImagen
-}
+// Pantalla de resultados: un Visual que por defecto ocupa toda la pantalla (desde el origen)
+class PantallaResultado inherits Visual(posicion = game.origin()) { }
 
 const pedidoCorrecto1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_Correcto.png")
 const pedidoFueraDeTiempo1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_SinTiempo.png")
@@ -86,28 +65,22 @@ object estadoJugando {
     method pasoUnSegundo(nivel) { nivel.descontarTiempo() }
 }
 
-object estadoSinTiempo {
+// Los estadps  en los que solo importa UN boton (y el tiempo no corre) comparten esta clase
+class EstadoConBoton {
+    const boton
+
     method procesarClick(nivel, posicion) {
-        nivel.clickearElemento(posicion, [botonReintentar]) //elementos: botonReintentar
+        nivel.clickearElemento(posicion, [boton])
     }
     method pasoUnSegundo(nivel) { }
 }
 
-object estadoCorrecto {
-    method procesarClick(nivel, posicion) {
-        nivel.clickearElemento(posicion, [botonSeguir]) // elementos: botonSeguir
-    }
-    method pasoUnSegundo(nivel) { }
-}
+object estadoSinTiempo inherits EstadoConBoton(boton = botonReintentar) { }
 
-//estado nuevo : si Click coincide con el boton de reiniciar, se reincia el juego completo 
+object estadoCorrecto inherits EstadoConBoton(boton = botonSeguir) { }
 
-object estadoFinal {
-    method procesarClick(nivel, posicion) {
-        nivel.clickearElemento(posicion, [botonReiniciar]) // elementos : botonReiniciar
-    }
-    method pasoUnSegundo(nivel) { }
-}
+//estado nuevo : si Click coincide con el boton de reiniciar se reincia el juego completo 
+object estadoFinal inherits EstadoConBoton(boton = botonReiniciar) { }
 
 class Nivel {
     var estado = estadoIntro
@@ -118,8 +91,11 @@ class Nivel {
     const property listaIngredientes
     const pedidoCorrecto
     const pedidoFueraDeTiempo
-    const esElUltimo = false         // para saber si es el ultimo nivel 
-    const property siguiente = null // nivel que sigue (el ultimo queda null)
+    const property siguiente = null // nivel que sigue (en NivelFinal queda null)
+
+    // getters para poder consultar el nivel (por ejemplo en los tests)
+    method estado() = estado
+    method tiempoRestante() = tiempo
 
     method clickPantalla(posicion) { 
     
@@ -160,14 +136,15 @@ class Nivel {
     method enviarPedido() {
         if (cliente.resultadoCorrecto()) {
             sonidos.pedidoCorrecto()
-            if (esElUltimo) {
-                self.terminarNivel(estadoFinal, pedidoCorrecto, botonReiniciar)
-            } else {
-                self.terminarNivel(estadoCorrecto, pedidoCorrecto, botonSeguir)
-            }
+            self.alCompletarPedido()
         } else {
             game.say(cliente.estudianteEnMostrador(), "Mi pedido está incompleto")
         }
+    }
+
+    // Que pasa cuando el pedido esta bien. NivelFinal lo redefine (override).
+    method alCompletarPedido() {
+        self.terminarNivel(estadoCorrecto, pedidoCorrecto, botonSeguir)
     }
 
     // Empezar: inicia la partida 
@@ -231,14 +208,6 @@ class Nivel {
         self.iniciarPartida()
     }
 
-    // si estamos en estadoFinal: avisa a juego de reiniciar todo el juego
- 
-    method volverAlInicio() {
-        game.removeVisual(pedidoCorrecto)
-        game.removeVisual(botonReiniciar)
-        juego.reiniciar()
-    }
-
     // vueve al estadoIntro una vez que termine el juego
     method reiniciarEstado() {
         estado = estadoIntro
@@ -246,16 +215,28 @@ class Nivel {
         cliente.reiniciar()
     }
 
-
 }
 
-// Los niveles se declaran de atrás hacia adelante para poder indicar cuál es el siguiente
-const nivel3 = new Nivel(
+// El ultimo nivel es un Nivel que, al completarse, no pasa a otro nivel:
+// termina el juego (estadoFinal) y ofrece reiniciar todo.
+class NivelFinal inherits Nivel {
+
+    override method alCompletarPedido() {
+        self.terminarNivel(estadoFinal, pedidoCorrecto, botonReiniciar)
+    }
+
+    method volverAlInicio() {
+        game.removeVisual(pedidoCorrecto)
+        game.removeVisual(botonReiniciar)
+        juego.reiniciar()
+    }
+}
+
+const nivel3 = new NivelFinal(
     cliente = matias,
     listaIngredientes = ingredientes3.lista(),
     pedidoCorrecto = pedidoCorrecto3,
-    pedidoFueraDeTiempo = pedidoFueraDeTiempo3,
-    esElUltimo = true
+    pedidoFueraDeTiempo = pedidoFueraDeTiempo3
 )
 
 const nivel2 = new Nivel(
@@ -274,29 +255,23 @@ const nivel1 = new Nivel(
     siguiente = nivel2
 )
 
-
-// Juego se encarga de saber en que nivel estas
-// El .WPGM le manda los clicks y el tiempo a Juego y el se lo envia al nivel actual.
-
 object juego {
 
     // empieza con nivel 1
     var nivelActual = nivel1
 
-    // juego envia los clicks al nivelActual
+    method nivelActual() = nivelActual
+
     method clickPantalla(posicion) { nivelActual.clickPantalla(posicion) }
 
-    // juego avisa al nivel actual para que se descuente el tiempo
     method pasoUnSegundo() { nivelActual.pasoUnSegundo() }
 
-    // pasa del nivelActual al siguiente nivel1 -> nivel2 -> nivel3:
   
     method avanzar() {
         nivelActual = nivelActual.siguiente()
         nivelActual.iniciarPartida()
     }
 
-    // si estoy en estadoFinal: se reinicia a nivel1
 
     method reiniciar() {
         [nivel1, nivel2, nivel3].forEach({ nivel => nivel.reiniciarEstado() })

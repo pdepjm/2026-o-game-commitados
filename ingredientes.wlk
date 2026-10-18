@@ -1,17 +1,14 @@
 import wollok.game.*    
+import visuales.*
 
-class Ingrediente {
+// Un Ingrediente es un clickeable
+// y solo agrega su nombre y que hace al ser clickeado
+class Ingrediente inherits Clickeable {
     const nombreIngrediente
-    const rutaImagen
-    const posicion
-
-    // getters de los ingredientes 
 
     method nombre() = nombreIngrediente
-    method image() = rutaImagen
-    method position() = posicion
 
-    method clickear(nivel) {
+    override method clickear(nivel) {
         nivel.recibirIngrediente(self) // self es el ingrediente  clickeado
     }
 }
@@ -63,4 +60,3 @@ const obleas = new Ingrediente(nombreIngrediente = "obleas", rutaImagen = "jugad
 object ingredientes3 {
     const property lista = [bananaSplit, chocolate, cremaOreo, durazno, frutilla, melon, mentaGranizada, multifruta, naranja, chispasChocolate, granas, jarabeChocolate, jarabeFrutilla, obleas]
 }
-

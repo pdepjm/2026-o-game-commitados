@@ -9,51 +9,49 @@ object nivelDePrueba {
     method restado() = restado
 }
 
-describe "estudiante que pidio cafe y medialunas" {
-    const unEstudiante = new Estudiante(
+describe "cliente paciente que pidio cafe y medialunas" {
+    const unCliente = new ClientePaciente(
         pedido = [cafe, medialunas],
         mensaje = "Hola",
-        personalidad = paciente,
         estudianteEnMostrador = estudianteMostrador,
         pedidoReferencia = pedidoReferencia1
     )
 
     test "recien creado no tiene el pedido completo" {
-        assert.notThat(unEstudiante.resultadoCorrecto())
+        assert.notThat(unCliente.resultadoCorrecto())
     }
 
     test "el pedido se completa cuando llega todo lo pedido" {
-        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
-        assert.notThat(unEstudiante.resultadoCorrecto())
-        unEstudiante.recibirIngredientes(medialunas, nivelDePrueba)
-        assert.that(unEstudiante.resultadoCorrecto())
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
+        unCliente.recibirIngredientes(medialunas, nivelDePrueba)
+        assert.that(unCliente.resultadoCorrecto())
     }
 
     test "recibir dos veces el mismo ingrediente no completa el pedido" {
-        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
-        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
-        assert.notThat(unEstudiante.resultadoCorrecto())
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
     }
 
     test "un ingrediente que no pidio no cuenta para el pedido" {
-        unEstudiante.recibirIngredientes(agua, nivelDePrueba)
-        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
-        assert.notThat(unEstudiante.resultadoCorrecto())
+        unCliente.recibirIngredientes(agua, nivelDePrueba)
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
     }
 
     test "reiniciar limpia lo entregado" {
-        unEstudiante.recibirIngredientes(cafe, nivelDePrueba)
-        unEstudiante.recibirIngredientes(medialunas, nivelDePrueba)
-        unEstudiante.reiniciar()
-        assert.notThat(unEstudiante.resultadoCorrecto())
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        unCliente.recibirIngredientes(medialunas, nivelDePrueba)
+        unCliente.reiniciar()
+        assert.notThat(unCliente.resultadoCorrecto())
     }
 }
 
-test "un estudiante exigente le resta 5 segundos al nivel al equivocarse" {
-    const unEstudiante = new Estudiante(
+test "un cliente exigente le resta 5 segundos al nivel al equivocarse" {
+    const unCliente = new ClienteExigente(
         pedido = [cafe],
         mensaje = "Hola",
-        personalidad = exigente,
         estudianteEnMostrador = estudianteMostrador,
         pedidoReferencia = pedidoReferencia1
     )
@@ -62,15 +60,14 @@ test "un estudiante exigente le resta 5 segundos al nivel al equivocarse" {
         method restarTiempo(cantidad) { restado = cantidad }
         method restado() = restado
     }
-    unEstudiante.recibirIngredientes(agua, nivelPropio)
+    unCliente.recibirIngredientes(agua, nivelPropio)
     assert.equals(5, nivelPropio.restado())
 }
 
-test "un estudiante paciente no le resta tiempo al nivel al equivocarse" {
-    const unEstudiante = new Estudiante(
+test "un cliente paciente no le resta tiempo al nivel al equivocarse" {
+    const unCliente = new ClientePaciente(
         pedido = [cafe],
         mensaje = "Hola",
-        personalidad = paciente,
         estudianteEnMostrador = estudianteMostrador,
         pedidoReferencia = pedidoReferencia1
     )
@@ -79,7 +76,7 @@ test "un estudiante paciente no le resta tiempo al nivel al equivocarse" {
         method restarTiempo(cantidad) { restado = cantidad }
         method restado() = restado
     }
-    unEstudiante.recibirIngredientes(agua, nivelPropio)
+    unCliente.recibirIngredientes(agua, nivelPropio)
     assert.equals(0, nivelPropio.restado())
 }
 

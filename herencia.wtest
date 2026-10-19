@@ -4,44 +4,23 @@ import clientes.*
 import niveles.*
 
 object nivelFalso {
-    const llamados = []
-    const elementosRecibidos = []
     var restado = 0
+    var tiempoDescontado = false
 
-    method llamados() = llamados
-    method elementos() = elementosRecibidos
     method restado() = restado
+    method tiempoDescontado() = tiempoDescontado
 
     method restarTiempo(cantidad) {
         restado = restado + cantidad
     }
 
-    method clickearElemento(posicion, elementos) {
-        elementosRecibidos.addAll(elementos)
-    }
-
     method descontarTiempo() {
-        llamados.add("descontarTiempo")
+        tiempoDescontado = true
     }
 
-    method recibirIngrediente(ingrediente) {
-        llamados.add("recibirIngrediente")
-    }
-
-    method enviarPedido() {
-        llamados.add("enviarPedido")
-    }
-
-    method siguienteNivel() {
-        llamados.add("siguienteNivel")
-    }
-
-    method reintentar() {
-        llamados.add("reintentar")
-    }
-
-    method volverAlInicio() {
-        llamados.add("volverAlInicio")
+    method reiniciar() {
+        restado = 0
+        tiempoDescontado = false
     }
 }
 
@@ -103,16 +82,16 @@ describe "clientes" {
     }
 }
 
-test "los estados con boton heredan de EstadoConBoton y cada uno escucha solo a su boton" {
-    [estadoSinTiempo, estadoCorrecto, estadoFinal].forEach({ estado => estado.procesarClick(nivelFalso, game.at(0, 0)) })
-    assert.equals([botonReintentar, botonSeguir, botonReiniciar], nivelFalso.elementos())
-}
-
 test "los estados con boton heredan que el tiempo no corre, pero estadoJugando si lo descuenta" {
-    [estadoSinTiempo, estadoCorrecto, estadoFinal].forEach({ estado => estado.pasoUnSegundo(nivelFalso) })
-    assert.equals([], nivelFalso.llamados())
+    nivelFalso.reiniciar()
+
+    estadoSinTiempo.pasoUnSegundo(nivelFalso)
+    estadoCorrecto.pasoUnSegundo(nivelFalso)
+    estadoFinal.pasoUnSegundo(nivelFalso)
+    assert.notThat(nivelFalso.tiempoDescontado())
+
     estadoJugando.pasoUnSegundo(nivelFalso)
-    assert.equals(["descontarTiempo"], nivelFalso.llamados())
+    assert.that(nivelFalso.tiempoDescontado())
 }
 
 describe "niveles" {

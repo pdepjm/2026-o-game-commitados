@@ -1,92 +1,30 @@
-import wollok.game.*    
 import ingredientes.*
-import sonidos.*
 
-
-object mostrador {
-    method position() = game.origin()
-    method image() = "fondos/fondo_Mostrador.png"
-}
-
-// Estudiantes sentados
-class EstudianteSentado {
-    const rutaImagen
-    const posicion = game.at(6, 2)
-
-    method position() = posicion
-    method image() = rutaImagen
-}
-
-const estudianteMostrador = new EstudianteSentado(rutaImagen = "juegor1/estudiante_Mostrador3.png")
-const mariaMostrador      = new EstudianteSentado(rutaImagen = "juegor2/maria_Mostrador.png")
-const matiasMostrador     = new EstudianteSentado(rutaImagen = "jugador3/matias_Mostrador.png")
-
-
-// Pedidos de referencias
-class PedidoReferencia {
-    const rutaImagen
-    const posicion = game.at(8, 2)
-
-    method position() = posicion
-    method image() = rutaImagen
-}
-
-const pedidoReferencia1 = new PedidoReferencia(rutaImagen = "juegor1/Cafe_Con_Medialunas.png")
-const pedidoReferencia2 = new PedidoReferencia(rutaImagen = "juegor2/hamburguesa.png")
-const pedidoReferencia3 = new PedidoReferencia(rutaImagen = "jugador3/helado_cremaOreo_bananaSplit.png")
-
-
-
-// personalidad
-object paciente {
-    method reaccionarAlError(estudiante, nivel) {
-        estudiante.decir("Esto no lo pedí")
-    }
-}
-
-object exigente {
-    method reaccionarAlError(estudiante, nivel) {
-        estudiante.decir("¡Eso no lo pedí! -5 segundos")
-        nivel.restarTiempo(5)
-    }
-}
-
-object copado {
-    method reaccionarAlError(estudiante, nivel) {
-        estudiante.decir("No pasa nada, gracias igual")
-    }
-}
-
-class Estudiante {
+class Cliente {
     const pedido
-    const mensaje
-    const personalidad
-    const property estudianteEnMostrador
-    const property pedidoReferencia
-    var entregado = []
+    const property mensaje
+    const entregado = []
 
-    method decir(texto) {
-        game.say(estudianteEnMostrador, texto)
-    }
-
-    method hacerPedido() {
-        self.decir(mensaje)
-        game.addVisual(pedidoReferencia)    
-    }
-
-    ///////////////////////// MODIFICAR recibirIngredientes////////////////////7
-
-    method recibirIngredientes(ingrediente, nivel) {  
+    method recibirIngrediente(ingrediente, nivel) {
         if (not pedido.contains(ingrediente)) {
-            personalidad.reaccionarAlError(self, nivel)
+            self.reaccionarAlError(nivel)
         } else if (entregado.contains(ingrediente)) {
-            self.decir("Ya me lo diste")
+            self.reaccionarAlRepetido(nivel)
         } else {
             entregado.add(ingrediente)
-            sonidos.ingredienteCorrecto()
-            self.decir("Bien")
+            nivel.ingredienteCorrecto()
+            self.reaccionarAlCorrecto(nivel)
         }
     }
+
+    method reaccionarAlError(nivel)
+
+    method reaccionarAlRepetido(nivel) { nivel.decir("Ya me lo diste") }
+    method reaccionarAlCorrecto(nivel) { nivel.decir("Bien") }
+    method reaccionarAlPedidoIncompleto(nivel) { nivel.decir("Mi pedido está incompleto") }
+
+    // ingredientes que todavía no recibio
+    method ingredientesFaltantes() = pedido.filter({ ingrediente => not entregado.contains(ingrediente) })
 
     method reiniciar() {
         entregado.clear()
@@ -95,26 +33,85 @@ class Estudiante {
     method resultadoCorrecto() = entregado.size() == pedido.size()
 }
 
-const estudiante = new Estudiante(
+// Tolera algunos errores y recién después se cansa
+class ClientePaciente inherits Cliente {
+    const erroresQueTolera = 2
+    var errores = 0
+
+    override method reaccionarAlError(nivel) {
+        errores += 1
+        if (errores <= erroresQueTolera) {
+            nivel.decir("Esto no lo pedí, tranqui, sigo esperando")
+        } else {
+            nivel.decir("Ya me estoy cansando... -2 segundos")
+            nivel.restarTiempo(2)
+        }
+    }
+
+    override method reiniciar() {
+        super()
+        errores = 0
+    }
+}
+
+// los errores y los repetidos restan tiempo
+class ClienteExigente inherits Cliente {
+    var errores = 0
+
+    method penalizar(motivo, nivel) {
+        errores += 1
+        const segundos = 3 + (errores - 1) * 2
+        nivel.decir(motivo + " -" + segundos + " segundos")
+        nivel.restarTiempo(segundos)
+    }
+
+    override method reaccionarAlError(nivel) {
+        self.penalizar("¡Eso no lo pedí!", nivel)
+    }
+
+    override method reaccionarAlRepetido(nivel) {
+        self.penalizar("¡Eso ya me lo diste!", nivel)
+    }
+
+    override method reiniciar() {
+        super()
+        errores = 0
+    }
+}
+
+// Avisa qué ingrediente falta y premia ingredintes correcto con tiempo extra
+class ClienteCopado inherits Cliente {
+
+    override method reaccionarAlError(nivel) {
+        if (self.ingredientesFaltantes().isEmpty()) {
+            nivel.decir("No pasa nada, ya tengo todo. ¡Mandalo!")
+        } else {
+            nivel.decir("No pasa nada, me falta " + self.ingredientesFaltantes().first().textoParaMostrar())
+        }
+    }
+
+    override method reaccionarAlCorrecto(nivel) {
+        nivel.decir("¡Genial! +1 segundo")
+        nivel.sumarTiempo(1)
+    }
+
+    override method reaccionarAlPedidoIncompleto(nivel) {
+        nivel.decir("Todavía me falta " + self.ingredientesFaltantes().first().textoParaMostrar())
+    }
+}
+
+// CLIENTES DEL JUEGO
+const estudiante = new ClienteExigente(
     pedido = [cafe, medialunas],
-    mensaje = "Hola, quisiera un café con medialunas",
-    personalidad = exigente,
-    estudianteEnMostrador = estudianteMostrador, // cliente sentado
-    pedidoReferencia = pedidoReferencia1 // pedido del cliente
+    mensaje = "Hola, quisiera un café con medialunas"
 )
 
-const maria = new Estudiante(
+const maria = new ClientePaciente(
     pedido = [carne, cebolla, lechuga, panInferior, panSuperior, queso],
-    mensaje = "Hola buenas, quiero ordenar una Hamburguesa completa",
-    personalidad = paciente,
-    estudianteEnMostrador = mariaMostrador, 
-    pedidoReferencia = pedidoReferencia2 
+    mensaje = "Hola buenas, quiero ordenar una Hamburguesa completa"
 )
 
-const matias = new Estudiante(
+const matias = new ClienteCopado(
     pedido = [cremaOreo, bananaSplit, jarabeChocolate],
-    mensaje = "Hola, quisiera un helado de Crema Oreo y Banana split con jarabe de chocolate",
-    personalidad = copado,
-    estudianteEnMostrador = matiasMostrador, 
-    pedidoReferencia = pedidoReferencia3
+    mensaje = "Hola, quisiera un helado de Crema Oreo y Banana split con jarabe de chocolate"
 )

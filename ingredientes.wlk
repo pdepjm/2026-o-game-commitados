@@ -1,66 +1,63 @@
-import wollok.game.*    
+import wollok.game.*
+import visuales.*
 
-class Ingrediente {
+class Ingrediente inherits Clickeable {
     const nombreIngrediente
-    const rutaImagen
-    const posicion
 
-    // getters de los ingredientes 
+    // Texto para mostrar 
+    const textoIngrediente = null
 
-    method nombre() = nombreIngrediente
-    method image() = rutaImagen
-    method position() = posicion
+    method textoParaMostrar() = if (textoIngrediente == null) nombreIngrediente else textoIngrediente
 
-    method clickear(nivel) {
-        nivel.recibirIngrediente(self) // self es el ingrediente  clickeado
+    override method clickear(juego) {
+        juego.nivelActual().recibirIngrediente(self)
     }
 }
 
-// Ingredientes Nivel1
-const agua = new Ingrediente(nombreIngrediente = "agua", rutaImagen = "juegor1/agua.png", posicion = game.at(1, 0))
-const te = new Ingrediente(nombreIngrediente = "te", rutaImagen = "juegor1/te.png", posicion = game.at(3, 0))
-const cafe = new Ingrediente(nombreIngrediente = "cafe", rutaImagen = "juegor1/cafe.png", posicion = game.at(5, 0))
-const gaseosa = new Ingrediente(nombreIngrediente = "gaseosa", rutaImagen = "juegor1/gaseosa.png", posicion = game.at(7, 0))
-const pan = new Ingrediente(nombreIngrediente = "pan", rutaImagen = "juegor1/pan.png", posicion = game.at(9, 0))
-const galletas = new Ingrediente(nombreIngrediente = "galletas", rutaImagen = "juegor1/galletas.png", posicion = game.at(11, 0))
-const medialunas = new Ingrediente(nombreIngrediente = "medialunas", rutaImagen = "juegor1/medialunas.png", posicion = game.at(12, 0))
+// INGREDIENTES NIVEL 1
+const agua = new Ingrediente(nombreIngrediente = "agua", rutaImagen = "juegor1/agua.png", posicion = game.at(13, 7))
+const te = new Ingrediente(nombreIngrediente = "te", textoIngrediente = "té", rutaImagen = "juegor1/te.png", posicion = game.at(14, 7))
+const cafe = new Ingrediente(nombreIngrediente = "cafe", textoIngrediente = "café", rutaImagen = "juegor1/cafe.png", posicion = game.at(15, 7))
+const gaseosa = new Ingrediente(nombreIngrediente = "gaseosa", rutaImagen = "juegor1/gaseosa.png", posicion = game.at(13, 6))
+const pan = new Ingrediente(nombreIngrediente = "pan", rutaImagen = "juegor1/pan.png", posicion = game.at(14, 6))
+const galletas = new Ingrediente(nombreIngrediente = "galletas", rutaImagen = "juegor1/galletas.png", posicion = game.at(15, 6))
+const medialunas = new Ingrediente(nombreIngrediente = "medialunas", rutaImagen = "juegor1/medialunas.png", posicion = game.at(13, 5))
 
 object ingredientes1 {
     const property lista = [agua, gaseosa, cafe, galletas, te, pan, medialunas]
 }
 
-// Ingredientes Nivel2
-
-const carne = new Ingrediente(nombreIngrediente = "carne", rutaImagen = "juegor2/carne_cocida.png", posicion = game.at(1, 0))
-const cebolla = new Ingrediente(nombreIngrediente = "cebolla", rutaImagen = "juegor2/cebolla_cortada.png", posicion = game.at(3, 0))
-const lechuga = new Ingrediente(nombreIngrediente = "lechuga", rutaImagen = "juegor2/lechuga_1_cruda.png", posicion = game.at(5, 0))
-const panInferior = new Ingrediente(nombreIngrediente = "panInferior", rutaImagen = "juegor2/pan_inferior.png", posicion = game.at(7, 0))
-const panSuperior = new Ingrediente(nombreIngrediente = "panSuperior", rutaImagen = "juegor2/pan_superior.png", posicion = game.at(9, 0))
-const queso = new Ingrediente(nombreIngrediente = "queso", rutaImagen = "juegor2/queso.png", posicion = game.at(11, 0))
+// INGREDIENTES NIVEL 2
+const carne = new Ingrediente(nombreIngrediente = "carne", rutaImagen = "juegor2/carne_cocida.png", posicion = game.at(13, 7))
+const cebolla = new Ingrediente(nombreIngrediente = "cebolla", rutaImagen = "juegor2/cebolla_cortada.png", posicion = game.at(14, 7))
+const lechuga = new Ingrediente(nombreIngrediente = "lechuga", rutaImagen = "juegor2/lechuga_1_cruda.png", posicion = game.at(15, 7))
+const panInferior = new Ingrediente(nombreIngrediente = "panInferior", textoIngrediente = "pan inferior", rutaImagen = "juegor2/pan_inferior.png", posicion = game.at(13, 6))
+const panSuperior = new Ingrediente(nombreIngrediente = "panSuperior", textoIngrediente = "pan superior", rutaImagen = "juegor2/pan_superior.png", posicion = game.at(14, 6))
+const queso = new Ingrediente(nombreIngrediente = "queso", rutaImagen = "juegor2/queso.png", posicion = game.at(15, 6))
+const anana = new Ingrediente(nombreIngrediente = "anana", textoIngrediente = "ananá", rutaImagen = "juegor2/anana.png", posicion = game.at(13, 5))
+const quesoAzul = new Ingrediente(nombreIngrediente = "quesoAzul", textoIngrediente = "queso azul", rutaImagen = "juegor2/queso_azul.png", posicion = game.at(14, 5))
+const huevoFrito = new Ingrediente(nombreIngrediente = "huevoFrito", textoIngrediente = "huevo frito", rutaImagen = "juegor2/huevo_frito.png", posicion = game.at(15, 5))
 
 object ingredientes2 {
-    const property lista = [carne, cebolla, lechuga, panInferior, panSuperior, queso]
+    const property lista = [carne, cebolla, lechuga, panInferior, panSuperior, queso, anana, quesoAzul, huevoFrito]
 }
 
-// Ingredientes Nivel3
-
-const bananaSplit = new Ingrediente(nombreIngrediente = "bananaSplit", rutaImagen = "jugador3/sabor_bananaSplit.png", posicion = game.at(1, 0))
-const chocolate = new Ingrediente(nombreIngrediente = "chocolate", rutaImagen = "jugador3/sabor_chocolate.png", posicion = game.at(3, 0))
-const cremaOreo = new Ingrediente(nombreIngrediente = "cremaOreo", rutaImagen = "jugador3/sabor_cremaOreo.png", posicion = game.at(5, 0))
-const durazno = new Ingrediente(nombreIngrediente = "durazno", rutaImagen = "jugador3/sabor_durazno.png", posicion = game.at(7, 0))
-const frutilla = new Ingrediente(nombreIngrediente = "frutilla", rutaImagen = "jugador3/sabor_frutilla.png", posicion = game.at(9, 0))
-const melon = new Ingrediente(nombreIngrediente = "melon", rutaImagen = "jugador3/sabor_melon.png", posicion = game.at(11, 0))
-const mentaGranizada = new Ingrediente(nombreIngrediente = "mentaGranizada", rutaImagen = "jugador3/sabor_mentaGranizada.png", posicion = game.at(13, 0))
-
-const multifruta = new Ingrediente(nombreIngrediente = "multifruta", rutaImagen = "jugador3/sabor_multifruta.png", posicion = game.at(1,1))
-const naranja = new Ingrediente(nombreIngrediente = "naranja", rutaImagen = "jugador3/sabor_naranja.png", posicion = game.at(3,1))
-const chispasChocolate = new Ingrediente(nombreIngrediente = "chispasChocolate", rutaImagen = "jugador3/topping_chispasDeChocolate.png", posicion = game.at(5, 1))
-const granas = new Ingrediente(nombreIngrediente = "granas", rutaImagen = "jugador3/topping_granas.png", posicion = game.at(7, 1))
-const jarabeChocolate = new Ingrediente(nombreIngrediente = "jarabeChocolate", rutaImagen = "jugador3/topping_jarabeDeChocolate.png", posicion = game.at(9, 1))
-const jarabeFrutilla = new Ingrediente(nombreIngrediente = "jarabeFrutilla", rutaImagen = "jugador3/topping_jarabeDeFrutilla.png", posicion = game.at(11, 1))
-const obleas = new Ingrediente(nombreIngrediente = "obleas", rutaImagen = "jugador3/topping_obleasVainilla.png", posicion = game.at(13, 1))
+// INGREDIENTES NIVEL 3
+const bananaSplit = new Ingrediente(nombreIngrediente = "bananaSplit", textoIngrediente = "banana split", rutaImagen = "jugador3/sabor_bananaSplit.png", posicion = game.at(13, 7))
+const chocolate = new Ingrediente(nombreIngrediente = "chocolate", rutaImagen = "jugador3/sabor_chocolate.png", posicion = game.at(14, 7))
+const cremaOreo = new Ingrediente(nombreIngrediente = "cremaOreo", textoIngrediente = "crema Oreo", rutaImagen = "jugador3/sabor_cremaOreo.png", posicion = game.at(15, 7))
+const durazno = new Ingrediente(nombreIngrediente = "durazno", rutaImagen = "jugador3/sabor_durazno.png", posicion = game.at(13, 6))
+const frutilla = new Ingrediente(nombreIngrediente = "frutilla", rutaImagen = "jugador3/sabor_frutilla.png", posicion = game.at(14, 6))
+const melon = new Ingrediente(nombreIngrediente = "melon", textoIngrediente = "melón", rutaImagen = "jugador3/sabor_melon.png", posicion = game.at(15, 6))
+const mentaGranizada = new Ingrediente(nombreIngrediente = "mentaGranizada", textoIngrediente = "menta granizada", rutaImagen = "jugador3/sabor_mentaGranizada.png", posicion = game.at(13, 5))
+const multifruta = new Ingrediente(nombreIngrediente = "multifruta", rutaImagen = "jugador3/sabor_multifruta.png", posicion = game.at(14, 5))
+const naranja = new Ingrediente(nombreIngrediente = "naranja", rutaImagen = "jugador3/sabor_naranja.png", posicion = game.at(15, 5))
+const chispasChocolate = new Ingrediente(nombreIngrediente = "chispasChocolate", textoIngrediente = "chispas de chocolate", rutaImagen = "jugador3/topping_chispasDeChocolate.png", posicion = game.at(13, 4))
+const granas = new Ingrediente(nombreIngrediente = "granas", rutaImagen = "jugador3/topping_granas.png", posicion = game.at(14, 4))
+const jarabeChocolate = new Ingrediente(nombreIngrediente = "jarabeChocolate", textoIngrediente = "jarabe de chocolate", rutaImagen = "jugador3/topping_jarabeDeChocolate.png", posicion = game.at(15, 4))
+const jarabeFrutilla = new Ingrediente(nombreIngrediente = "jarabeFrutilla", textoIngrediente = "jarabe de frutilla", rutaImagen = "jugador3/topping_jarabeDeFrutilla.png", posicion = game.at(13, 3))
+const obleas = new Ingrediente(nombreIngrediente = "obleas", rutaImagen = "jugador3/topping_obleasVainilla.png", posicion = game.at(14, 3))
 
 object ingredientes3 {
     const property lista = [bananaSplit, chocolate, cremaOreo, durazno, frutilla, melon, mentaGranizada, multifruta, naranja, chispasChocolate, granas, jarabeChocolate, jarabeFrutilla, obleas]
 }
-

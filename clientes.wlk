@@ -5,7 +5,8 @@ import recetas.*
 
 class Cliente {
 
-    const property pedido
+    var property pedido = null
+
     // Cada personalidad puede redefinir su saludo
     method saludo() = "Hola,"
     method mensaje() = self.saludo() + " " + pedido.descripcion()
@@ -38,6 +39,11 @@ class Cliente {
     }
 
     method resultadoCorrecto() = pedido.estaCompleto()
+
+    method atender(unPedido) {
+        pedido = unPedido
+        self.reiniciar()
+    }
 }
 
 // Tolera algunos errores y recién después se cansa
@@ -108,13 +114,6 @@ class ClienteCopado inherits Cliente {
 }
 
 // CLIENTES DEL JUEGO
-const estudiante = new ClienteExigente(
-    pedido = new Pedido(recetas = [cafeConMedialunas, heladoOreoBanana])
-)
-const maria = new ClientePaciente(
-    pedido = new Pedido(recetas = [hamburguesaCompleta,cafeConMedialunas])
-)
-
-const matias = new ClienteCopado(
-    pedido = new Pedido(recetas = [heladoOreoBanana])
-)
+const estudiante = new ClienteExigente()
+const maria = new ClientePaciente()
+const matias = new ClienteCopado()

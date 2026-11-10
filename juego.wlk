@@ -8,9 +8,10 @@ import sonidos.*
 object juego {
     
     // Cantidad de niveles de la partida
-    const cantidadDeNiveles = 3
-    const niveles = fabricaDeNiveles.crearNiveles(cantidadDeNiveles)
-    var nivelesPendientes = niveles
+    const cantidadDeNiveles = 4
+
+
+    var nivelesPendientes = []
     var estado = estadoIntro
 
     var resultadoVisible = []
@@ -28,17 +29,12 @@ object juego {
         })
     }
 
-    method verificarNivel() {
-        if (self.nivelActual().pedidoCompleto()) {
-            self.nivelCompletado()
-        } else if (self.nivelActual().seAcaboElTiempo()) {
-            self.sinTiempo()
-        }
+    method nuevaPartida() {
+        nivelesPendientes = fabricaDeNiveles.crearNiveles(cantidadDeNiveles, self)
     }
 
     // PANTALLA 
     method mostrarNivel() {
-        self.nivelActual().prepararEscena()
         pantalla.mostrar(self.nivelActual().visuales())
     }
 
@@ -61,14 +57,15 @@ object juego {
 
     // FLUJO DEL JUEGO
     method empezar() {
+        self.nuevaPartida()
         self.ocultarIntro()
         self.iniciarNivel()
     }
 
     method iniciarNivel() {
         estado = estadoJugando
-        self.mostrarNivel()
         self.nivelActual().iniciar()
+        self.mostrarNivel()
     }
 
     method terminarNivel(nuevoEstado, fondo) {
@@ -105,7 +102,6 @@ object juego {
 
     method reiniciar() {
         self.ocultarResultado()
-        nivelesPendientes = niveles
         estado = estadoIntro
         self.mostrarIntro()
     }

@@ -15,3 +15,26 @@ class Pedido {
 
     method reiniciar() { entregado.clear() }
 }
+
+// Sabe elegir al azar. Se inyecta para poder testear sin azar.
+object azar {
+    method unoDe(opciones) = opciones.anyOne()
+}
+
+// Arma pedidos nuevos tomando recetas de la carta, sin repetir
+class GeneradorDePedidos {
+    const carta
+    const sorteador
+
+    method generar(cuantasRecetas) = new Pedido(recetas = self.elegirRecetas(cuantasRecetas))
+
+    method elegirRecetas(cuantas) {
+        const elegidas = []
+        cuantas.min(carta.recetas().size()).times({ i =>
+            elegidas.add(sorteador.unoDe(self.disponibles(elegidas)))
+        })
+        return elegidas
+    }
+
+    method disponibles(yaElegidas) = carta.recetas().filter({ receta => not yaElegidas.contains(receta) })
+}

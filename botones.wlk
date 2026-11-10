@@ -2,11 +2,10 @@ import wollok.game.*
 import visuales.*
 
 // INTRO
-object imagenIntro inherits Visual(rutaImagen = "fondos/Intro.png", posicion = game.origin()) { }
-
-object botonIntro inherits Visual(rutaImagen = "botones/boton_Intro.png", posicion = game.at(5, 1)) { }
+const imagenIntro = new Visual(rutaImagen = "fondos/Intro.png", posicion = game.origin())
 
 // BOTONES
+const botonIntro = new Visual(rutaImagen = "botones/boton_Intro.png", posicion = game.at(5, 1))
 
 object botonEnviar inherits Clickeable(rutaImagen = "botones/boton_enviarPedido3.png", posicion = game.at(15, 1)) {
     override method clickear(juego) {

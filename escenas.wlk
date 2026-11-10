@@ -6,7 +6,7 @@ import sonidos.*
 import recetas.*
 
 
-object mostrador inherits Visual(rutaImagen = "fondos/fondo_Mostrador.png", posicion = game.origin()) { }
+const mostrador = new Visual(rutaImagen = "fondos/fondo_Mostrador.png", posicion = game.origin())
 
 const panelIngredientes = new Visual(rutaImagen = "fondos/panel_ingredientes.png", posicion = game.at(13, 3))
 
@@ -40,6 +40,7 @@ const pedidoCorrecto2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_Corre
 const pedidoFueraDeTiempo2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_SinTiempo.png")
 
 const pedidoFueraDeTiempo3 = new PantallaResultado(rutaImagen = "jugador3/Pedido_SinTiempo.png")
+const pedidoCorrecto3 = new PantallaResultado(rutaImagen = "jugador3/Pedido_Correcto.png")
 
 // Pantalla final
 const pantallaFinal = new PantallaResultado(rutaImagen = "fondos/Final.png")
@@ -95,6 +96,6 @@ const escena2 = new Escena(
 const escena3 = new Escena(
     visualCliente = matiasMostrador,
     extras = sabores + toppings,
-    pantallaCorrecto = pantallaFinal,
+    pantallaCorrecto = pedidoCorrecto3,
     pantallaSinTiempo = pedidoFueraDeTiempo3
 )

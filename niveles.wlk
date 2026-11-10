@@ -1,5 +1,8 @@
 import clientes.*
 import escenas.*
+import pedidos.*
+import recetas.*
+
 
 
 class Temporizador {
@@ -25,11 +28,10 @@ class Temporizador {
 
 class Nivel {
     const cliente
+    const pedido
     const reloj
     const property escena
-    var pedidoCompleto = false
-
-    method pedidoCompleto() = pedidoCompleto
+    const avisarA 
 
     method seAcaboElTiempo() = reloj.seAcabo()
 
@@ -38,8 +40,8 @@ class Nivel {
     // Iniciar (o reintentar) siempre deja el nivel desde cero
     method iniciar() {
         reloj.iniciar()
-        cliente.reiniciar()
-        pedidoCompleto = false
+        cliente.atender(pedido)
+        escena.prepararPara(cliente)
         self.decir(cliente.mensaje())
     }
 
@@ -49,7 +51,7 @@ class Nivel {
 
     method enviarPedido() {
         if (cliente.resultadoCorrecto()) {
-            pedidoCompleto = true
+                avisarA.nivelCompletado()
         } else {
             cliente.reaccionarAlPedidoIncompleto(self)
         }
@@ -60,7 +62,9 @@ class Nivel {
     }
 
     method restarTiempo(cantidad) {
+        const quedabaTiempo = not reloj.seAcabo()
         reloj.restar(cantidad)
+        if (quedabaTiempo and reloj.seAcabo()) { avisarA.sinTiempo() }
     }
 
     method sumarTiempo(cantidad) {
@@ -74,7 +78,7 @@ class Nivel {
     method ingredienteCorrecto() {
         escena.sonarAcierto()
     }
-    method prepararEscena() { escena.prepararPara(cliente) }
+   // method prepararEscena() { escena.prepararPara(cliente) }
     method visuales() = escena.visuales()
 }
 
@@ -90,23 +94,30 @@ object fabricaDeNiveles {
     const segundosQueSeRestanPorNivel = 2
     const segundosMinimos = 10
 
+    const recetasIniciales = 1
+    const nivelesPorRecetaExtra = 2
+
+    const generador = new GeneradorDePedidos(carta = carta, sorteador = azar)
+
     const escenarios = [
         new Escenario(cliente = estudiante, escena = escena1),
         new Escenario(cliente = maria,      escena = escena2),
         new Escenario(cliente = matias,     escena = escena3)
     ]
 
-    method crearNiveles(cantidad) = (1..cantidad).map({ numero => self.nivelNumero(numero) })
-
-    method nivelNumero(numero) {
+   method crearNiveles(cantidad, avisado) = (1..cantidad).map({ numero => self.nivelNumero(numero, avisado) })
+   method nivelNumero(numero, avisado) {
         const escenario = escenarios.get((numero - 1) % escenarios.size())
         return new Nivel(
             cliente = escenario.cliente(),
             escena = escenario.escena(),
-            reloj = new Temporizador(segundosIniciales = self.segundosDelNivel(numero))
+            pedido = generador.generar(self.recetasDelNivel(numero)),
+            reloj = new Temporizador(segundosIniciales = self.segundosDelNivel(numero)),
+            avisarA = avisado
         )
     }
-
     method segundosDelNivel(numero) =
         (segundosIniciales - (numero - 1) * segundosQueSeRestanPorNivel).max(segundosMinimos)
+    method recetasDelNivel(numero) =
+        recetasIniciales + (numero - 1).div(nivelesPorRecetaExtra)
 }

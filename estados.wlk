@@ -15,12 +15,10 @@ object estadoIntro {
 object estadoJugando {
     method procesarClick(juego, posicion) {
         juego.clickearElemento(posicion, juego.nivelActual().escena().clickeables())
-        juego.verificarNivel()
     }
 
     method pasoUnSegundo(juego) {
         juego.nivelActual().descontarTiempo()
-        juego.verificarNivel()
     }
 }
 
@@ -34,8 +32,8 @@ class EstadoConBoton {
     method pasoUnSegundo(juego) { }
 }
 
-object estadoSinTiempo inherits EstadoConBoton(boton = botonReintentar) { }
+const estadoSinTiempo = new EstadoConBoton(boton = botonReintentar)
 
-object estadoCorrecto inherits EstadoConBoton(boton = botonSeguir) { }
+const estadoCorrecto = new EstadoConBoton(boton = botonSeguir)
 
-object estadoFinal inherits EstadoConBoton(boton = botonReiniciar) { }
+const estadoFinal = new EstadoConBoton(boton = botonReiniciar)

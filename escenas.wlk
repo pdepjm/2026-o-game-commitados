@@ -6,7 +6,6 @@ import sonidos.*
 import recetas.*
 
 
-
 object mostrador inherits Visual(rutaImagen = "fondos/fondo_Mostrador.png", posicion = game.origin()) { }
 
 const panelIngredientes = new Visual(rutaImagen = "fondos/panel_ingredientes.png", posicion = game.at(13, 3))

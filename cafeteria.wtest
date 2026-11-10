@@ -6,6 +6,10 @@ import escenas.*
 import estados.*
 import botones.*
 import juego.*
+import pedidos.*
+import recetas.*
+
+
 
 class NivelFalso {
     const dichos = []
@@ -70,9 +74,9 @@ test "las subclases de Visual tienen su posicion por defecto" {
 // herencia
 
 describe "clientes" {
-    const paciente = new ClientePaciente(pedido = [cafe, medialunas], mensaje = "Hola")
-    const exigente = new ClienteExigente(pedido = [cafe, medialunas], mensaje = "Hola")
-    const copado = new ClienteCopado(pedido = [cafe, medialunas], mensaje = "Hola")
+    const paciente = new ClientePaciente(pedido = new Pedido (recetas =[cafeConMedialunas]))
+    const exigente = new ClienteExigente(pedido = new Pedido (recetas = [cafeConMedialunas]))
+    const copado = new ClienteCopado(pedido = new Pedido (recetas =[cafeConMedialunas]))
     const clientes = [paciente, exigente, copado]
     const nivelFalso = new NivelFalso()
 
@@ -148,13 +152,13 @@ describe "estados" {
 
 describe "niveles" {
     const escena = new EscenaFalsa()
-    const unCliente = new ClientePaciente(pedido = [cafe, medialunas], mensaje = "Hola, un cafe con medialunas")
+    const unCliente = new ClientePaciente(pedido = new Pedido(recetas = [cafeConMedialunas]))
     const nivel = new Nivel(cliente = unCliente, escena = escena, reloj = new Temporizador(segundosIniciales = 30))
 
     test "al iniciar, arranca el reloj y el cliente dice su pedido" {
         nivel.iniciar()
         assert.equals(30, nivel.tiempoRestante())
-        assert.equals("Hola, un cafe con medialunas", escena.ultimoDicho())
+        assert.equals("Hola, un café con medialunas", escena.ultimoDicho())
     }
 
     test "el nivel resta y suma tiempo" {
@@ -237,5 +241,73 @@ describe "juego" {
         juego.clickPantalla(botonReintentar.position())
         assert.equals(escena1, juego.nivelActual().escena())
         assert.equals(30, juego.nivelActual().tiempoRestante())
+    }
+}
+
+describe "un pedido de una sola receta" {
+    const pedido = new Pedido(recetas = [cafeConMedialunas])
+
+    test "pide los ingredientes de su receta" {
+        assert.equals([cafe, medialunas], pedido.ingredientes())
+        assert.that(pedido.pide(cafe))
+        assert.notThat(pedido.pide(agua))
+    }
+
+    test "se describe con el nombre de la receta" {
+        assert.equals("un café con medialunas", pedido.descripcion())
+    }
+
+    test "se completa cuando recibe todo" {
+        assert.notThat(pedido.estaCompleto())
+        pedido.agregar(cafe)
+        assert.equals([medialunas], pedido.faltantes())
+        pedido.agregar(medialunas)
+        assert.that(pedido.estaCompleto())
+    }
+
+    test "reiniciar lo deja como nuevo" {
+        pedido.agregar(cafe)
+        pedido.reiniciar()
+        assert.notThat(pedido.estaCompleto())
+        assert.equals(2, pedido.faltantes().size())
+    }
+}
+
+describe "un pedido combinado" {
+    const pedido = new Pedido(recetas = [cafeConMedialunas, heladoOreoBanana])
+
+    test "junta los ingredientes de todas sus recetas" {
+        assert.equals(5, pedido.ingredientes().size())
+        assert.that(pedido.pide(cafe))
+        assert.that(pedido.pide(cremaOreo))
+    }
+
+    test "se describe nombrando las dos recetas" {
+        assert.equals("un café con medialunas y un helado de crema Oreo y banana split con jarabe de chocolate", pedido.descripcion())
+    }
+
+    test "necesita todos los ingredientes de las dos recetas para estar completo" {
+        cafeConMedialunas.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.notThat(pedido.estaCompleto())
+        heladoOreoBanana.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.that(pedido.estaCompleto())
+    }
+
+    test "muestra una imagen por receta" {
+        assert.equals(2, pedido.imagenes().size())
+    }
+}
+
+describe "recetas que comparten un ingrediente" {
+    const tostado = new Receta(nombre = "un tostado", imagen = "juegor2/queso.png", ingredientes = [panInferior, queso])
+    const pedido = new Pedido(recetas = [tostado, hamburguesaCompleta])
+
+    test "el ingrediente compartido se pide una sola vez" {
+        assert.equals(6, pedido.ingredientes().size())
+    }
+
+    test "entregarlo una vez alcanza para las dos recetas" {
+        pedido.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.that(pedido.estaCompleto())
     }
 }

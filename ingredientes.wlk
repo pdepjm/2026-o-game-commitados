@@ -39,7 +39,7 @@ const quesoAzul = new Ingrediente(nombreIngrediente = "quesoAzul", textoIngredie
 const huevoFrito = new Ingrediente(nombreIngrediente = "huevoFrito", textoIngrediente = "huevo frito", rutaImagen = "juegor2/huevo_frito.png", posicion = game.at(15, 5))
 
 object ingredientes2 {
-    const property lista = [carne, cebolla, lechuga, panInferior, panSuperior, queso, anana, quesoAzul, huevoFrito]
+    const property lista = [carne, agua , cebolla, lechuga, panInferior, panSuperior, queso, anana, quesoAzul, huevoFrito]
 }
 
 // INGREDIENTES NIVEL 3

@@ -1,17 +1,21 @@
 import ingredientes.*
+import pedidos.*
+import recetas.* 
+
 
 class Cliente {
-    const pedido
-    const property mensaje
-    const entregado = []
 
+    const property pedido
+    // Cada personalidad puede redefinir su saludo
+    method saludo() = "Hola,"
+    method mensaje() = self.saludo() + " " + pedido.descripcion()
     method recibirIngrediente(ingrediente, nivel) {
-        if (not pedido.contains(ingrediente)) {
+        if (not pedido.pide(ingrediente)) {
             self.reaccionarAlError(nivel)
-        } else if (entregado.contains(ingrediente)) {
+        } else if (pedido.yaTiene(ingrediente)) {
             self.reaccionarAlRepetido(nivel)
         } else {
-            entregado.add(ingrediente)
+            pedido.agregar(ingrediente)
             nivel.ingredienteCorrecto()
             self.reaccionarAlCorrecto(nivel)
         }
@@ -24,13 +28,13 @@ class Cliente {
     method reaccionarAlPedidoIncompleto(nivel) { nivel.decir("Mi pedido está incompleto") }
 
     // ingredientes que todavía no recibio
-    method ingredientesFaltantes() = pedido.filter({ ingrediente => not entregado.contains(ingrediente) })
+    method ingredientesFaltantes() = pedido.faltantes()
 
     method reiniciar() {
-        entregado.clear()
+        pedido.reiniciar()
     }
 
-    method resultadoCorrecto() = entregado.size() == pedido.size()
+    method resultadoCorrecto() = pedido.estaCompleto()
 }
 
 // Tolera algunos errores y recién después se cansa
@@ -102,16 +106,12 @@ class ClienteCopado inherits Cliente {
 
 // CLIENTES DEL JUEGO
 const estudiante = new ClienteExigente(
-    pedido = [cafe, medialunas],
-    mensaje = "Hola, quisiera un café con medialunas"
+    pedido = new Pedido(recetas = [cafeConMedialunas])
 )
-
 const maria = new ClientePaciente(
-    pedido = [carne, cebolla, lechuga, panInferior, panSuperior, queso],
-    mensaje = "Hola buenas, quiero ordenar una Hamburguesa completa"
+    pedido = new Pedido(recetas = [cafeConMedialunas])
 )
 
 const matias = new ClienteCopado(
-    pedido = [cremaOreo, bananaSplit, jarabeChocolate],
-    mensaje = "Hola, quisiera un helado de Crema Oreo y Banana split con jarabe de chocolate"
+    pedido = new Pedido(recetas = [heladoOreoBanana])
 )

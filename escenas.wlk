@@ -3,6 +3,8 @@ import visuales.*
 import ingredientes.*
 import botones.*
 import sonidos.*
+import recetas.*
+
 
 
 object mostrador inherits Visual(rutaImagen = "fondos/fondo_Mostrador.png", posicion = game.origin()) { }
@@ -19,9 +21,9 @@ const matiasMostrador     = new EstudianteSentado(rutaImagen = "jugador3/matias_
 // Imagen de referencia del pedido
 class PedidoReferencia inherits Visual(posicion = game.at(8, 2)) { }
 
-const pedidoReferencia1 = new PedidoReferencia(rutaImagen = "juegor1/Cafe_Con_Medialunas.png")
-const pedidoReferencia2 = new PedidoReferencia(rutaImagen = "juegor2/hamburguesa.png")
-const pedidoReferencia3 = new PedidoReferencia(rutaImagen = "jugador3/helado_cremaOreo_bananaSplit.png")
+const pedidoReferencia1 = new PedidoReferencia(rutaImagen = cafeConMedialunas.imagen())
+const pedidoReferencia2 = new PedidoReferencia(rutaImagen = hamburguesaCompleta.imagen())
+const pedidoReferencia3 = new PedidoReferencia(rutaImagen = heladoOreoBanana.imagen())
 
 // Pantallas de resultado
 class PantallaResultado inherits Visual(posicion = game.origin()) { }

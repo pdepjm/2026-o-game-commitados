@@ -74,6 +74,8 @@ class Nivel {
     method ingredienteCorrecto() {
         escena.sonarAcierto()
     }
+    method prepararEscena() { escena.prepararPara(cliente) }
+    method visuales() = escena.visuales()
 }
 
 // Agrupa lo que cambia de un nivel a otro

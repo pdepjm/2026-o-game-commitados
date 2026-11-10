@@ -4,7 +4,7 @@ class Pedido {
 
     method ingredientes() = recetas.flatMap({ receta => receta.ingredientes() }).withoutDuplicates()
     method descripcion() = recetas.map({ receta => receta.nombre() }).join(" y ")
-    method imagenes() = recetas.map({ receta => receta.imagen() })
+    method imagenes() = recetas.map({ receta => receta.image() })
 
     method pide(ingrediente) = self.ingredientes().contains(ingrediente)
     method yaTiene(ingrediente) = entregado.contains(ingrediente)

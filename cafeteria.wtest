@@ -8,6 +8,8 @@ import botones.*
 import juego.*
 import pedidos.*
 import recetas.*
+import visuales.* 
+
 
 
 
@@ -36,6 +38,8 @@ class EscenaFalsa {
     method ultimoDicho() = dichos.last()
     method decir(texto) { dichos.add(texto) }
     method sonarAcierto() { }
+    method prepararPara(cliente) { }
+    method visuales() = []
 }
 
 class JuegoFalso {
@@ -51,10 +55,8 @@ class JuegoFalso {
 
 // visuales e ingredientes
 
-test "un ingrediente tiene imagen, posicion y texto" {
+test "un ingrediente tiene imagen y texto" {
     assert.equals("juegor1/cafe.png", cafe.image())
-    assert.equals(15, cafe.position().x())
-    assert.equals(7, cafe.position().y())
     assert.equals("café", cafe.textoParaMostrar())
     assert.equals("agua", agua.textoParaMostrar())
 }
@@ -70,6 +72,72 @@ test "las subclases de Visual tienen su posicion por defecto" {
     assert.equals(game.origin().x(), unaPantalla.position().x())
     assert.equals(game.origin().y(), unaPantalla.position().y())
 }
+test "un visual se puede mover de lugar" {
+    const unVisual = new Visual(rutaImagen = "x.png")
+    assert.equals(game.origin().x(), unVisual.position().x())
+    unVisual.moverA(game.at(4, 5))
+    assert.equals(4, unVisual.position().x())
+    assert.equals(5, unVisual.position().y())
+}
+describe "la grilla reparte lugares" {
+    const grilla = new Grilla(columnas = [1, 2], filas = [5, 4])
+
+    test "sus celdas van fila por fila, de izquierda a derecha" {
+        assert.equals(4, grilla.capacidad())
+        assert.equals([1, 2, 1, 2], grilla.celdas().map({ celda => celda.x() }))
+        assert.equals([5, 5, 4, 4], grilla.celdas().map({ celda => celda.y() }))
+    }
+
+    test "no se rompe si hay mas visuales que celdas, ni si no hay ninguno" {
+        const seis = (1 .. 6).map({ n => new Visual(rutaImagen = n.toString() + ".png") })
+        grilla.acomodar(seis)
+        grilla.acomodar([])
+        assert.equals(4, grilla.capacidad())
+    }
+}
+describe "una escena se arma a partir del pedido" {
+    const clienteDePrueba = new ClientePaciente(pedido = new Pedido(recetas = [cafeConMedialunas, hamburguesaCompleta]))
+    const escenaDePrueba = new Escena(
+        visualCliente = mariaMostrador,
+        extras = hamburgueseria + bebidas,
+        pantallaCorrecto = pedidoCorrecto2,
+        pantallaSinTiempo = pedidoFueraDeTiempo2
+    )
+
+    test "ofrece todo lo que el pedido necesita, aunque no sea de su panel original" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.that(clienteDePrueba.ingredientesPedidos().all({ ingrediente => escenaDePrueba.ingredientes().contains(ingrediente) }))
+        assert.that(escenaDePrueba.ingredientes().contains(cafe))
+        assert.that(escenaDePrueba.ingredientes().contains(carne))
+    }
+
+    test "tambien ofrece los extras, sin repetir y sin pasarse del panel" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.that(escenaDePrueba.ingredientes().contains(quesoAzul))
+        assert.equals(escenaDePrueba.ingredientes().asSet().size(), escenaDePrueba.ingredientes().size())
+        assert.that(escenaDePrueba.ingredientes().size() <= panel.capacidad())
+    }
+
+    test "cada ingrediente queda en una celda distinta" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        const lugares = escenaDePrueba.ingredientes().map({ ingrediente => ingrediente.position().x() * 100 + ingrediente.position().y() })
+        assert.equals(lugares.asSet().size(), lugares.size())
+    }
+
+    test "los pedido de referencia se acomodan en la vitrina" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.equals([cafeConMedialunas, hamburguesaCompleta], escenaDePrueba.enLaVitrina())
+        assert.equals([8, 10], escenaDePrueba.enLaVitrina().map({ receta => receta.position().x() }))
+    }
+
+    test "prepararla de nuevo no duplica los ingredientes" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        const cuantos = escenaDePrueba.ingredientes().size()
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.equals(cuantos, escenaDePrueba.ingredientes().size())
+    }
+}
+
 
 // herencia
 
@@ -220,9 +288,10 @@ describe "fabricaDeNiveles" {
 // flujo del juego
 
 describe "juego" {
-    method completarNivelActual() {
-        juego.nivelActual().recibirIngrediente(cafe)
-        juego.nivelActual().recibirIngrediente(medialunas)
+        method completarNivelActual() {
+        estudiante.ingredientesFaltantes().forEach({ ingrediente =>
+            juego.nivelActual().recibirIngrediente(ingrediente)
+        })
         juego.nivelActual().enviarPedido()
         juego.verificarNivel()
     }
@@ -299,7 +368,7 @@ describe "un pedido combinado" {
 }
 
 describe "recetas que comparten un ingrediente" {
-    const tostado = new Receta(nombre = "un tostado", imagen = "juegor2/queso.png", ingredientes = [panInferior, queso])
+    const tostado = new Receta(nombre = "un tostado", rutaImagen = "juegor2/queso.png", ingredientes = [panInferior, queso])
     const pedido = new Pedido(recetas = [tostado, hamburguesaCompleta])
 
     test "el ingrediente compartido se pide una sola vez" {

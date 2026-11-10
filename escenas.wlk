@@ -11,6 +11,12 @@ object mostrador inherits Visual(rutaImagen = "fondos/fondo_Mostrador.png", posi
 
 const panelIngredientes = new Visual(rutaImagen = "fondos/panel_ingredientes.png", posicion = game.at(13, 3))
 
+//donde se colocan los ingredientes
+const panel = new Grilla(columnas = [13, 14, 15], filas = [7, 6, 5, 4, 3])
+
+// donde se coloca las fotos de referencia 
+const vitrina = new Grilla(columnas = [8, 10], filas = [2])
+
 // Cliente sentado en el mostrador
 class EstudianteSentado inherits Visual(posicion = game.at(6, 2)) { }
 
@@ -21,9 +27,9 @@ const matiasMostrador     = new EstudianteSentado(rutaImagen = "jugador3/matias_
 // Imagen de referencia del pedido
 class PedidoReferencia inherits Visual(posicion = game.at(8, 2)) { }
 
-const pedidoReferencia1 = new PedidoReferencia(rutaImagen = cafeConMedialunas.imagen())
-const pedidoReferencia2 = new PedidoReferencia(rutaImagen = hamburguesaCompleta.imagen())
-const pedidoReferencia3 = new PedidoReferencia(rutaImagen = heladoOreoBanana.imagen())
+const pedidoReferencia1 = new PedidoReferencia(rutaImagen = cafeConMedialunas.image())
+const pedidoReferencia2 = new PedidoReferencia(rutaImagen = hamburguesaCompleta.image())
+const pedidoReferencia3 = new PedidoReferencia(rutaImagen = heladoOreoBanana.image())
 
 // Pantallas de resultado
 class PantallaResultado inherits Visual(posicion = game.origin()) { }
@@ -42,12 +48,25 @@ const pantallaFinal = new PantallaResultado(rutaImagen = "fondos/Final.png")
 
 class Escena {
     const visualCliente
-    const referencia
-    const ingredientes
+    // ingredientes que se ofrecen aunque el cliente no los pida
+    const extras
     const property pantallaCorrecto
     const property pantallaSinTiempo
 
-    method visuales() = [mostrador, panelIngredientes, visualCliente] + ingredientes + [botonEnviar, referencia]
+    const property ingredientes = []
+    const property enLaVitrina = []
+
+    method prepararPara(cliente) {
+        ingredientes.clear()
+        ingredientes.addAll((cliente.ingredientesPedidos() + extras).withoutDuplicates().take(panel.capacidad()).randomized())
+        panel.acomodar(ingredientes)
+
+        enLaVitrina.clear()
+        enLaVitrina.addAll(cliente.recetasPedidas().take(vitrina.capacidad()))
+        vitrina.acomodar(enLaVitrina)
+    }
+
+    method visuales() = [mostrador, panelIngredientes, visualCliente] + ingredientes + enLaVitrina + [botonEnviar]
 
     method clickeables() = ingredientes + [botonEnviar]
 
@@ -62,24 +81,21 @@ class Escena {
 
 const escena1 = new Escena(
     visualCliente = estudianteMostrador,
-    referencia = pedidoReferencia1,
-    ingredientes = ingredientes1.lista(),
+    extras = bebidas + panaderia,
     pantallaCorrecto = pedidoCorrecto1,
     pantallaSinTiempo = pedidoFueraDeTiempo1
 )
 
 const escena2 = new Escena(
     visualCliente = mariaMostrador,
-    referencia = pedidoReferencia2,
-    ingredientes = ingredientes2.lista(),
+    extras = hamburgueseria + bebidas,
     pantallaCorrecto = pedidoCorrecto2,
     pantallaSinTiempo = pedidoFueraDeTiempo2
 )
 
 const escena3 = new Escena(
     visualCliente = matiasMostrador,
-    referencia = pedidoReferencia3,
-    ingredientes = ingredientes3.lista(),
+    extras = sabores + toppings,
     pantallaCorrecto = pantallaFinal,
     pantallaSinTiempo = pedidoFueraDeTiempo3
 )

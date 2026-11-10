@@ -27,6 +27,9 @@ class Cliente {
     method reaccionarAlCorrecto(nivel) { nivel.decir("Bien") }
     method reaccionarAlPedidoIncompleto(nivel) { nivel.decir("Mi pedido está incompleto") }
 
+    method ingredientesPedidos() = pedido.ingredientes()
+    method recetasPedidas() = pedido.recetas()
+
     // ingredientes que todavía no recibio
     method ingredientesFaltantes() = pedido.faltantes()
 
@@ -106,10 +109,10 @@ class ClienteCopado inherits Cliente {
 
 // CLIENTES DEL JUEGO
 const estudiante = new ClienteExigente(
-    pedido = new Pedido(recetas = [cafeConMedialunas])
+    pedido = new Pedido(recetas = [cafeConMedialunas, heladoOreoBanana])
 )
 const maria = new ClientePaciente(
-    pedido = new Pedido(recetas = [cafeConMedialunas])
+    pedido = new Pedido(recetas = [hamburguesaCompleta,cafeConMedialunas])
 )
 
 const matias = new ClienteCopado(

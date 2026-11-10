@@ -1,26 +1,27 @@
 import ingredientes.* 
+import visuales.* 
 
-class Receta {
+
+class Receta inherits Visual {
     const property nombre
-    const property imagen
     const property ingredientes
 }
 
 const cafeConMedialunas = new Receta(
     nombre = "un café con medialunas",
-    imagen = "juegor1/Cafe_Con_Medialunas.png",
+    rutaImagen = "juegor1/Cafe_Con_Medialunas.png",
     ingredientes = [cafe, medialunas]
 )
 
 const hamburguesaCompleta = new Receta(
     nombre = "una hamburguesa completa",
-    imagen = "juegor2/hamburguesa.png",
-    ingredientes = [carne, cebolla, lechuga, panInferior, panSuperior, queso]
+    rutaImagen = "juegor2/hamburguesa.png",
+    ingredientes = [carne, cebolla, lechuga, panInferior, panSuperior, queso] //añadir tomate
 )
 
 const heladoOreoBanana = new Receta(
     nombre = "un helado de crema Oreo y banana split con jarabe de chocolate",
-    imagen = "jugador3/helado_cremaOreo_bananaSplit.png",
+    rutaImagen = "jugador3/helado_cremaOreo_bananaSplit.png",
     ingredientes = [cremaOreo, bananaSplit, jarabeChocolate]
 )
 

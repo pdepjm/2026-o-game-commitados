@@ -38,11 +38,12 @@ object juego {
 
     // PANTALLA 
     method mostrarNivel() {
-        pantalla.mostrar(self.nivelActual().escena().visuales())
+        self.nivelActual().prepararEscena()
+        pantalla.mostrar(self.nivelActual().visuales())
     }
 
     method limpiarPantalla() {
-        pantalla.ocultar(self.nivelActual().escena().visuales())
+        pantalla.ocultar(self.nivelActual().visuales())
     }
 
     method mostrarIntro() {

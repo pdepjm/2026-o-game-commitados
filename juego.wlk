@@ -77,7 +77,7 @@ object juego {
 
     method sinTiempo() {
         sonidos.sinTiempo()
-        self.terminarNivel(estadoSinTiempo, self.nivelActual().escena().pantallaSinTiempo())
+        self.terminarNivel(estadoSinTiempo, self.nivelActual().pantallaSinTiempo())
     }
 
     method nivelCompletado() {
@@ -85,7 +85,7 @@ object juego {
         if (self.esUltimoNivel()) {
             self.terminarNivel(estadoFinal, pantallaFinal)
         } else {
-            self.terminarNivel(estadoCorrecto, self.nivelActual().escena().pantallaCorrecto())
+            self.terminarNivel(estadoCorrecto, self.nivelActual().pantallaCorrecto())
         }
     }
 

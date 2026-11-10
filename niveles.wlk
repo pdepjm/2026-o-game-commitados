@@ -78,6 +78,10 @@ class Nivel {
     method ingredienteCorrecto() {
         escena.sonarAcierto()
     }
+    method clickeables() = escena.clickeables()
+    method pantallaCorrecto() = escena.pantallaCorrecto()
+    method pantallaSinTiempo() = escena.pantallaSinTiempo()
+    
    // method prepararEscena() { escena.prepararPara(cliente) }
     method visuales() = escena.visuales()
 }

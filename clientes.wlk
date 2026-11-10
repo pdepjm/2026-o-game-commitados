@@ -99,7 +99,7 @@ class ClienteCopado inherits Cliente {
         if (self.ingredientesFaltantes().isEmpty()) {
             nivel.decir("No pasa nada, ya tengo todo. ¡Mandalo!")
         } else {
-            nivel.decir("No pasa nada, me falta " + self.ingredientesFaltantes().first().textoParaMostrar())
+            nivel.decir("No pasa nada, me falta " + self.ingredientesFaltantes().first().textoIngrediente())
         }
     }
 
@@ -109,7 +109,7 @@ class ClienteCopado inherits Cliente {
     }
 
     override method reaccionarAlPedidoIncompleto(nivel) {
-        nivel.decir("Todavía me falta " + self.ingredientesFaltantes().first().textoParaMostrar())
+        nivel.decir("Todavía me falta " + self.ingredientesFaltantes().first().textoIngrediente())
     }
 }
 

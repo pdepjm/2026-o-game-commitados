@@ -14,7 +14,7 @@ object estadoIntro {
 
 object estadoJugando {
     method procesarClick(juego, posicion) {
-        juego.clickearElemento(posicion, juego.nivelActual().escena().clickeables())
+        juego.clickearElemento(posicion, juego.nivelActual().clickeables())
     }
 
     method pasoUnSegundo(juego) {

@@ -64,8 +64,8 @@ class JuegoEspia {
 
 test "un ingrediente tiene imagen y texto" {
     assert.equals("juegor1/cafe.png", cafe.image())
-    assert.equals("café", cafe.textoParaMostrar())
-    assert.equals("agua", agua.textoParaMostrar())
+    assert.equals("café", cafe.textoIngrediente())
+    assert.equals("agua", agua.textoIngrediente())
 }
 
 test "las subclases de Visual tienen su posicion por defecto" {

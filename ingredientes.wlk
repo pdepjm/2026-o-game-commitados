@@ -4,10 +4,8 @@ import visuales.*
 class Ingrediente inherits Clickeable {
     const nombreIngrediente
 
-    // Texto para mostrar 
-    const textoIngrediente = null
-
-    method textoParaMostrar() = if (textoIngrediente == null) nombreIngrediente else textoIngrediente
+        // Texto para mostrar: si no se indica otro, se usa el nombre
+    const property textoIngrediente = nombreIngrediente
 
     override method clickear(juego) {
         juego.nivelActual().recibirIngrediente(self)

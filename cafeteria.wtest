@@ -276,7 +276,7 @@ describe "niveles" {
         assert.notThat(unCliente.resultadoCorrecto())
         assert.equals(30, nivel.tiempoRestante())
     }
-
+}
 describe "cliente paciente que pidio cafe y medialunas" {
     const unCliente = new ClientePaciente(
         pedido = [cafe, medialunas],

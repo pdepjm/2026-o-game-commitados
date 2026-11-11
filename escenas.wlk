@@ -17,33 +17,31 @@ const panel = new Grilla(columnas = [13, 14, 15], filas = [7, 6, 5, 4, 3])
 const vitrina = new Grilla(columnas = [8, 10], filas = [2])
 
 // Cliente sentado en el mostrador
-class EstudianteSentado inherits Visual(posicion = game.at(6, 2)) { }
+const posicionCliente = game.at(6, 2)
 
-const estudianteMostrador = new EstudianteSentado(rutaImagen = "juegor1/estudiante_Mostrador3.png")
-const mariaMostrador      = new EstudianteSentado(rutaImagen = "juegor2/maria_Mostrador.png")
-const matiasMostrador     = new EstudianteSentado(rutaImagen = "jugador3/matias_Mostrador.png")
+const estudianteMostrador = new Visual(rutaImagen = "juegor1/estudiante_Mostrador3.png", posicion = posicionCliente)
+const mariaMostrador      = new Visual(rutaImagen = "juegor2/maria_Mostrador.png",       posicion = posicionCliente)
+const matiasMostrador     = new Visual(rutaImagen = "jugador3/matias_Mostrador.png",     posicion = posicionCliente)
 
 // Imagen de referencia del pedido
-class PedidoReferencia inherits Visual(posicion = game.at(8, 2)) { }
+const posicionReferencia = game.at(8, 2)
 
-const pedidoReferencia1 = new PedidoReferencia(rutaImagen = cafeConMedialunas.image())
-const pedidoReferencia2 = new PedidoReferencia(rutaImagen = hamburguesaCompleta.image())
-const pedidoReferencia3 = new PedidoReferencia(rutaImagen = heladoOreoBanana.image())
+const pedidoReferencia1 = new Visual(rutaImagen = cafeConMedialunas.image(),   posicion = posicionReferencia)
+const pedidoReferencia2 = new Visual(rutaImagen = hamburguesaCompleta.image(), posicion = posicionReferencia)
+const pedidoReferencia3 = new Visual(rutaImagen = heladoOreoBanana.image(),    posicion = posicionReferencia)
 
-// Pantallas de resultado
-class PantallaResultado inherits Visual(posicion = game.origin()) { }
+// Pantallas de resultado (ocupan toda la pantalla, por eso usan la posicion por defecto de Visual: el origen)
+const pedidoCorrecto1 = new Visual(rutaImagen = "juegor1/Pedido_Correcto.png")
+const pedidoFueraDeTiempo1 = new Visual(rutaImagen = "juegor1/Pedido_SinTiempo.png")
 
-const pedidoCorrecto1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_Correcto.png")
-const pedidoFueraDeTiempo1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_SinTiempo.png")
+const pedidoCorrecto2 = new Visual(rutaImagen = "juegor2/Pedido_Correcto.png")
+const pedidoFueraDeTiempo2 = new Visual(rutaImagen = "juegor2/Pedido_SinTiempo.png")
 
-const pedidoCorrecto2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_Correcto.png")
-const pedidoFueraDeTiempo2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_SinTiempo.png")
-
-const pedidoFueraDeTiempo3 = new PantallaResultado(rutaImagen = "jugador3/Pedido_SinTiempo.png")
-const pedidoCorrecto3 = new PantallaResultado(rutaImagen = "jugador3/Pedido_Correcto.png")
+const pedidoFueraDeTiempo3 = new Visual(rutaImagen = "jugador3/Pedido_SinTiempo.png")
+const pedidoCorrecto3 = new Visual(rutaImagen = "jugador3/Pedido_Correcto.png")
 
 // Pantalla final
-const pantallaFinal = new PantallaResultado(rutaImagen = "fondos/Final.png")
+const pantallaFinal = new Visual(rutaImagen = "fondos/Final.png")
 
 
 class Escena {

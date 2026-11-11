@@ -68,16 +68,13 @@ test "un ingrediente tiene imagen y texto" {
     assert.equals("agua", agua.textoIngrediente())
 }
 
-test "las subclases de Visual tienen su posicion por defecto" {
-    const unEstudiante = new EstudianteSentado(rutaImagen = "estudiante.png")
-    const unPedido = new PedidoReferencia(rutaImagen = "pedido.png")
-    const unaPantalla = new PantallaResultado(rutaImagen = "resultado.png")
-    assert.equals(game.at(6, 2).x(), unEstudiante.position().x())
-    assert.equals(game.at(6, 2).y(), unEstudiante.position().y())
-    assert.equals(game.at(8, 2).x(), unPedido.position().x())
-    assert.equals(game.at(8, 2).y(), unPedido.position().y())
-    assert.equals(game.origin().x(), unaPantalla.position().x())
-    assert.equals(game.origin().y(), unaPantalla.position().y())
+test "los visuales del mostrador y las pantallas tienen su posicion" {
+    assert.equals(game.at(6, 2).x(), estudianteMostrador.position().x())
+    assert.equals(game.at(6, 2).y(), estudianteMostrador.position().y())
+    assert.equals(game.at(8, 2).x(), pedidoReferencia1.position().x())
+    assert.equals(game.at(8, 2).y(), pedidoReferencia1.position().y())
+    assert.equals(game.origin().x(), pedidoCorrecto1.position().x())
+    assert.equals(game.origin().y(), pedidoCorrecto1.position().y())
 }
 test "un visual se puede mover de lugar" {
     const unVisual = new Visual(rutaImagen = "x.png")

@@ -1,282 +1,127 @@
-import wollok.game.*    
-import visuales.*
-import ingredientes.*
 import clientes.*
-import sonidos.*
+import escenas.*
+import pedidos.*
+import recetas.*
 
-// INTRO
-object imagenIntro inherits Visual(rutaImagen = "fondos/Intro.png", posicion = game.origin()) { }
 
-object botonIntro inherits Visual(rutaImagen = "botones/boton_Intro.png", posicion = game.at(5, 1)) { }
 
-// BOTONES
-// Todos son Clickeable: heredan image() y position() y estan obligados a definir clickear(nivel).
-object botonEnviar inherits Clickeable(rutaImagen = "botones/boton_enviarPedido3.png", posicion = game.at(15, 1)) {
-    override method clickear(nivel) {
-        nivel.enviarPedido()
+class Temporizador {
+    const segundosIniciales
+    var restante = 0
+
+    method restante() = restante
+
+    method iniciar() {
+        restante = segundosIniciales
     }
-}
 
-object botonSeguir inherits Clickeable(rutaImagen = "botones/boton_Seguir.png", posicion = game.at(9, 0)) {
-    override method clickear(nivel) {
-        nivel.siguienteNivel()
+    method restar(cantidad) {
+        restante = (restante - cantidad).max(0)
     }
-}
 
-object botonReintentar inherits Clickeable(rutaImagen = "botones/boton_Reintentar.png", posicion = game.at(9, 0)) {
-    override method clickear(nivel) {
-        nivel.reintentar() 
+    method sumar(cantidad) {
+        restante += cantidad
     }
+
+    method seAcabo() = restante <= 0
 }
-
-object botonReiniciar inherits Clickeable(rutaImagen = "botones/boton_Reiniciar.png", posicion = game.at(5, 1)) {
-    override method clickear(nivel) {
-        nivel.volverAlInicio()
-    }
-}
-
-
-// Pantalla de resultados: un Visual que por defecto ocupa toda la pantalla (desde el origen)
-class PantallaResultado inherits Visual(posicion = game.origin()) { }
-
-const pedidoCorrecto1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_Correcto.png")
-const pedidoFueraDeTiempo1 = new PantallaResultado(rutaImagen = "juegor1/Pedido_SinTiempo.png")
-
-const pedidoCorrecto2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_Correcto.png")
-const pedidoFueraDeTiempo2 = new PantallaResultado(rutaImagen = "juegor2/Pedido_SinTiempo.png")
-
-const pedidoCorrecto3 = new PantallaResultado(rutaImagen = "fondos/Final.png")
-const pedidoFueraDeTiempo3 = new PantallaResultado(rutaImagen = "jugador3/Pedido_SinTiempo.png")
-
-// Estados 
-object estadoIntro {
-    method procesarClick(nivel, posicion){ 
-        sonidos.iniciarMusica()
-        nivel.empezar() 
-        }   
-    method pasoUnSegundo(nivel) { }
-}
-
-object estadoJugando {
-    
-    method procesarClick(nivel, posicion) {
-        nivel.clickearElemento(posicion, nivel.listaIngredientes() + [botonEnviar]) // elementos: Ingredientes + botonEnviar
-    }
-    method pasoUnSegundo(nivel) { nivel.descontarTiempo() }
-}
-
-// Los estadps  en los que solo importa UN boton (y el tiempo no corre) comparten esta clase
-class EstadoConBoton {
-    const boton
-
-    method procesarClick(nivel, posicion) {
-        nivel.clickearElemento(posicion, [boton])
-    }
-    method pasoUnSegundo(nivel) { }
-}
-
-object estadoSinTiempo inherits EstadoConBoton(boton = botonReintentar) { }
-
-object estadoCorrecto inherits EstadoConBoton(boton = botonSeguir) { }
-
-//estado nuevo : si Click coincide con el boton de reiniciar se reincia el juego completo 
-object estadoFinal inherits EstadoConBoton(boton = botonReiniciar) { }
 
 class Nivel {
-    var estado = estadoIntro
-    var tiempo = 30
-    const segundos = 30
-
     const cliente
-    const property listaIngredientes
-    const pedidoCorrecto
-    const pedidoFueraDeTiempo
-    const property siguiente = null // nivel que sigue (en NivelFinal queda null)
+    const pedido
+    const reloj
+    const property escena
+    const avisarA 
 
-    // getters para poder consultar el nivel (por ejemplo en los tests)
-    method estado() = estado
-    method tiempoRestante() = tiempo
+    method seAcaboElTiempo() = reloj.seAcabo()
 
-    method clickPantalla(posicion) { 
-    
-        estado.procesarClick(self, posicion) 
-        
-        }
+    method tiempoRestante() = reloj.restante()
 
-    method clickearElemento(posicion, elementos) {
-        elementos.forEach({ elemento =>
-            if (elemento.position() == posicion) elemento.clickear(self)
-        })
+    // Iniciar (o reintentar) siempre deja el nivel desde cero
+    method iniciar() {
+        reloj.iniciar()
+        cliente.atender(pedido)
+        escena.prepararPara(cliente)
+        self.decir(cliente.mensaje())
     }
 
-    method pasoUnSegundo() { 
-        
-        estado.pasoUnSegundo(self) 
-        
-        }
+    method recibirIngrediente(ingrediente) {
+        cliente.recibirIngrediente(ingrediente, self)
+    }
 
-    method recibirIngrediente(ingrediente) { 
-        
-        cliente.recibirIngredientes(ingrediente, self)  //self es el nivel
-        
+    method enviarPedido() {
+        if (cliente.resultadoCorrecto()) {
+                avisarA.nivelCompletado()
+        } else {
+            cliente.reaccionarAlPedidoIncompleto(self)
         }
+    }
 
     method descontarTiempo() {
         self.restarTiempo(1)
     }
 
     method restarTiempo(cantidad) {
-        tiempo = tiempo - cantidad
-        if (tiempo <= 0) {
-            sonidos.sinTiempo()
-            self.terminarNivel(estadoSinTiempo, pedidoFueraDeTiempo, botonReintentar)
-        }
+        const quedabaTiempo = not reloj.seAcabo()
+        reloj.restar(cantidad)
+        if (quedabaTiempo and reloj.seAcabo()) { avisarA.sinTiempo() }
     }
 
-    method enviarPedido() {
-        if (cliente.resultadoCorrecto()) {
-            sonidos.pedidoCorrecto()
-            self.alCompletarPedido()
-        } else {
-            game.say(cliente.estudianteEnMostrador(), "Mi pedido está incompleto")
-        }
+    method sumarTiempo(cantidad) {
+        reloj.sumar(cantidad)
     }
 
-    // Que pasa cuando el pedido esta bien. NivelFinal lo redefine (override).
-    method alCompletarPedido() {
-        self.terminarNivel(estadoCorrecto, pedidoCorrecto, botonSeguir)
+    method decir(texto) {
+        escena.decir(texto)
     }
 
-    // Empezar: inicia la partida 
-
-    method empezar() {
-        game.removeVisual(imagenIntro)
-        game.removeVisual(botonIntro)
-        self.iniciarPartida()
+    method ingredienteCorrecto() {
+        escena.sonarAcierto()
     }
-
-    // iniciarPartida: pasa al estadoJugando, carga cliente + hacePedido , ingredintes y boton enviar.
-    method iniciarPartida() {
-        estado = estadoJugando
-        tiempo = segundos
-
-        game.addVisual(mostrador)
-        game.addVisual(cliente.estudianteEnMostrador())
-        listaIngredientes.forEach({ ing => game.addVisual(ing) })
-        game.addVisual(botonEnviar)
-        cliente.hacerPedido()
-    }
-
-
-    // limpiarPantalla : saca todo de la pantalla 
-
-    method limpiarPantalla() {
-        game.removeVisual(mostrador)
-        game.removeVisual(cliente.estudianteEnMostrador())
-        game.removeVisual(botonEnviar)
-        game.removeVisual(cliente.pedidoReferencia())
-        listaIngredientes.forEach({ ing => game.removeVisual(ing) })
-    }
-
-    // terminarNivel:  para estadoCorrecto, estadoSinTiempo , estadoFinal
-
-    method terminarNivel(nuevoEstado, fondo, boton){
-        estado = nuevoEstado
-        self.limpiarPantalla()
-
-        game.addVisual(fondo)
-        game.addVisual(boton)
-    }
-
-
-
-    // si estamos en estadoCorrecto: Avisa a juego que pase al nivel siguiente
-
-    method siguienteNivel() {
-        game.removeVisual(pedidoCorrecto)
-        game.removeVisual(botonSeguir)
-        juego.avanzar()
-    }
-
-
-    // si estamos en estadoSinTiempo: se reiniar el nivel 
-
-    method reintentar() {
-        game.removeVisual(pedidoFueraDeTiempo)
-        game.removeVisual(botonReintentar)
-        cliente.reiniciar()
-        self.iniciarPartida()
-    }
-
-    // vueve al estadoIntro una vez que termine el juego
-    method reiniciarEstado() {
-        estado = estadoIntro
-        tiempo = segundos
-        cliente.reiniciar()
-    }
-
+    method clickeables() = escena.clickeables()
+    method pantallaCorrecto() = escena.pantallaCorrecto()
+    method pantallaSinTiempo() = escena.pantallaSinTiempo()
+    
+   // method prepararEscena() { escena.prepararPara(cliente) }
+    method visuales() = escena.visuales()
 }
 
-// El ultimo nivel es un Nivel que, al completarse, no pasa a otro nivel:
-// termina el juego (estadoFinal) y ofrece reiniciar todo.
-class NivelFinal inherits Nivel {
-
-    override method alCompletarPedido() {
-        self.terminarNivel(estadoFinal, pedidoCorrecto, botonReiniciar)
-    }
-
-    method volverAlInicio() {
-        game.removeVisual(pedidoCorrecto)
-        game.removeVisual(botonReiniciar)
-        juego.reiniciar()
-    }
+// Agrupa lo que cambia de un nivel a otro
+class Escenario {
+    const property cliente
+    const property escena
 }
 
-const nivel3 = new NivelFinal(
-    cliente = matias,
-    listaIngredientes = ingredientes3.lista(),
-    pedidoCorrecto = pedidoCorrecto3,
-    pedidoFueraDeTiempo = pedidoFueraDeTiempo3
-)
 
-const nivel2 = new Nivel(
-    cliente = maria,
-    listaIngredientes = ingredientes2.lista(),
-    pedidoCorrecto = pedidoCorrecto2,
-    pedidoFueraDeTiempo = pedidoFueraDeTiempo2,
-    siguiente = nivel3
-)
+object fabricaDeNiveles {
+    const segundosIniciales = 30
+    const segundosQueSeRestanPorNivel = 2
+    const segundosMinimos = 10
 
-const nivel1 = new Nivel(
-    cliente = estudiante,
-    listaIngredientes = ingredientes1.lista(),
-    pedidoCorrecto = pedidoCorrecto1,
-    pedidoFueraDeTiempo = pedidoFueraDeTiempo1,
-    siguiente = nivel2
-)
+    const recetasIniciales = 1
+    const nivelesPorRecetaExtra = 2
 
-object juego {
+    const generador = new GeneradorDePedidos(carta = carta, sorteador = azar)
 
-    // empieza con nivel 1
-    var nivelActual = nivel1
+    const escenarios = [
+        new Escenario(cliente = estudiante, escena = escena1),
+        new Escenario(cliente = maria,      escena = escena2),
+        new Escenario(cliente = matias,     escena = escena3)
+    ]
 
-    method nivelActual() = nivelActual
-
-    method clickPantalla(posicion) { nivelActual.clickPantalla(posicion) }
-
-    method pasoUnSegundo() { nivelActual.pasoUnSegundo() }
-
-  
-    method avanzar() {
-        nivelActual = nivelActual.siguiente()
-        nivelActual.iniciarPartida()
+   method crearNiveles(cantidad, avisado) = (1..cantidad).map({ numero => self.nivelNumero(numero, avisado) })
+   method nivelNumero(numero, avisado) {
+        const escenario = escenarios.get((numero - 1) % escenarios.size())
+        return new Nivel(
+            cliente = escenario.cliente(),
+            escena = escenario.escena(),
+            pedido = generador.generar(self.recetasDelNivel(numero)),
+            reloj = new Temporizador(segundosIniciales = self.segundosDelNivel(numero)),
+            avisarA = avisado
+        )
     }
-
-
-    method reiniciar() {
-        [nivel1, nivel2, nivel3].forEach({ nivel => nivel.reiniciarEstado() })
-        nivelActual = nivel1
-        game.addVisual(imagenIntro)
-        game.addVisual(botonIntro)
-    }
+    method segundosDelNivel(numero) =
+        (segundosIniciales - (numero - 1) * segundosQueSeRestanPorNivel).max(segundosMinimos)
+    method recetasDelNivel(numero) =
+        recetasIniciales + (numero - 1).div(nivelesPorRecetaExtra)
 }

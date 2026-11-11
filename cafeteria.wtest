@@ -2,13 +2,281 @@ import wollok.game.*
 import ingredientes.*
 import clientes.*
 import niveles.*
+import escenas.*
+import estados.*
+import botones.*
+import juego.*
+import pedidos.*
+import recetas.*
+import visuales.* 
 
-object nivelDePrueba {
+
+
+
+class NivelFalso {
+    const dichos = []
     var restado = 0
-    method restarTiempo(cantidad) { restado = restado + cantidad }
+    var sumado = 0
+    var tiempoDescontado = false
+
+    method dichos() = dichos
+    method ultimoDicho() = dichos.last()
     method restado() = restado
+    method sumado() = sumado
+    method tiempoDescontado() = tiempoDescontado
+
+    method decir(texto) { dichos.add(texto) }
+    method restarTiempo(cantidad) { restado += cantidad }
+    method sumarTiempo(cantidad) { sumado += cantidad }
+    method descontarTiempo() { tiempoDescontado = true }
+    method ingredienteCorrecto() { }
 }
 
+class EscenaFalsa {
+    const dichos = []
+
+    method ultimoDicho() = dichos.last()
+    method decir(texto) { dichos.add(texto) }
+    method sonarAcierto() { }
+    method prepararPara(cliente) { }
+    method visuales() = []
+}
+
+class JuegoFalso {
+    const elementos = []
+    const nivel = new NivelFalso()
+
+    method elementos() = elementos
+    method nivelActual() = nivel
+
+    method clickearElemento(posicion, lista) { elementos.addAll(lista) }
+    method verificarNivel() { }
+}
+class JuegoEspia {
+    var property completados = 0
+    var property sinTiempos = 0
+
+    method nivelCompletado() { completados += 1 }
+    method sinTiempo() { sinTiempos += 1 }
+}
+
+// visuales e ingredientes
+
+test "un ingrediente tiene imagen y texto" {
+    assert.equals("juegor1/cafe.png", cafe.image())
+    assert.equals("café", cafe.textoIngrediente())
+    assert.equals("agua", agua.textoIngrediente())
+}
+
+test "los visuales del mostrador y las pantallas tienen su posicion" {
+    assert.equals(game.at(6, 2).x(), estudianteMostrador.position().x())
+    assert.equals(game.at(6, 2).y(), estudianteMostrador.position().y())
+    assert.equals(game.at(8, 2).x(), pedidoReferencia1.position().x())
+    assert.equals(game.at(8, 2).y(), pedidoReferencia1.position().y())
+    assert.equals(game.origin().x(), pedidoCorrecto1.position().x())
+    assert.equals(game.origin().y(), pedidoCorrecto1.position().y())
+}
+test "un visual se puede mover de lugar" {
+    const unVisual = new Visual(rutaImagen = "x.png")
+    assert.equals(game.origin().x(), unVisual.position().x())
+    unVisual.moverA(game.at(4, 5))
+    assert.equals(4, unVisual.position().x())
+    assert.equals(5, unVisual.position().y())
+}
+describe "la grilla reparte lugares" {
+    const grilla = new Grilla(columnas = [1, 2], filas = [5, 4])
+
+
+    test "sus celdas van fila por fila, de izquierda a derecha" {
+        assert.equals(4, grilla.capacidad())
+        assert.equals([1, 2, 1, 2], grilla.celdas().map({ celda => celda.x() }))
+        assert.equals([5, 5, 4, 4], grilla.celdas().map({ celda => celda.y() }))
+    }
+
+    test "no se rompe si hay mas visuales que celdas, ni si no hay ninguno" {
+        const seis = (1 .. 6).map({ n => new Visual(rutaImagen = n.toString() + ".png") })
+        grilla.acomodar(seis)
+        grilla.acomodar([])
+        assert.equals(4, grilla.capacidad())
+    }
+}
+describe "una escena se arma a partir del pedido" {
+    const clienteDePrueba = new ClientePaciente(pedido = new Pedido(recetas = [cafeConMedialunas, hamburguesaCompleta]))
+    const escenaDePrueba = new Escena(
+        visualCliente = mariaMostrador,
+        extras = hamburgueseria + bebidas,
+        pantallaCorrecto = pedidoCorrecto2,
+        pantallaSinTiempo = pedidoFueraDeTiempo2
+    )
+
+    test "ofrece todo lo que el pedido necesita, aunque no sea de su panel original" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.that(clienteDePrueba.ingredientesPedidos().all({ ingrediente => escenaDePrueba.ingredientes().contains(ingrediente) }))
+        assert.that(escenaDePrueba.ingredientes().contains(cafe))
+        assert.that(escenaDePrueba.ingredientes().contains(carne))
+    }
+
+    test "tambien ofrece los extras, sin repetir y sin pasarse del panel" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.that(escenaDePrueba.ingredientes().contains(quesoAzul))
+        assert.equals(escenaDePrueba.ingredientes().asSet().size(), escenaDePrueba.ingredientes().size())
+        assert.that(escenaDePrueba.ingredientes().size() <= panel.capacidad())
+    }
+
+    test "cada ingrediente queda en una celda distinta" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        const lugares = escenaDePrueba.ingredientes().map({ ingrediente => ingrediente.position().x() * 100 + ingrediente.position().y() })
+        assert.equals(lugares.asSet().size(), lugares.size())
+    }
+
+    test "los pedido de referencia se acomodan en la vitrina" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.equals([cafeConMedialunas, hamburguesaCompleta], escenaDePrueba.enLaVitrina())
+        assert.equals([8, 10], escenaDePrueba.enLaVitrina().map({ receta => receta.position().x() }))
+    }
+
+    test "prepararla de nuevo no duplica los ingredientes" {
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        const cuantos = escenaDePrueba.ingredientes().size()
+        escenaDePrueba.prepararPara(clienteDePrueba)
+        assert.equals(cuantos, escenaDePrueba.ingredientes().size())
+    }
+}
+
+
+// herencia
+
+describe "clientes" {
+    const paciente = new ClientePaciente(pedido = new Pedido (recetas =[cafeConMedialunas]))
+    const exigente = new ClienteExigente(pedido = new Pedido (recetas = [cafeConMedialunas]))
+    const copado = new ClienteCopado(pedido = new Pedido (recetas =[cafeConMedialunas]))
+    const clientes = [paciente, exigente, copado]
+    const nivelFalso = new NivelFalso()
+
+    test "todos los clientes comparten la logica del pedido" {
+        clientes.forEach({ cliente => cliente.recibirIngrediente(cafe, nivelFalso) })
+        assert.that(clientes.all({ cliente => not cliente.resultadoCorrecto() }))
+        clientes.forEach({ cliente => cliente.recibirIngrediente(medialunas, nivelFalso) })
+        assert.that(clientes.all({ cliente => cliente.resultadoCorrecto() }))
+        clientes.forEach({ cliente => cliente.reiniciar() })
+        assert.that(clientes.all({ cliente => not cliente.resultadoCorrecto() }))
+    }
+
+    test "solo el exigente resta tiempo en el primer error" {
+        paciente.recibirIngrediente(agua, nivelFalso)
+        copado.recibirIngrediente(agua, nivelFalso)
+        assert.equals(0, nivelFalso.restado())
+        exigente.recibirIngrediente(agua, nivelFalso)
+        assert.equals(3, nivelFalso.restado())
+    }
+
+    test "el exigente resta cada vez mas tiempo" {
+        exigente.recibirIngrediente(agua, nivelFalso)
+        exigente.recibirIngrediente(agua, nivelFalso)
+        assert.equals(8, nivelFalso.restado())
+    }
+
+    test "el paciente aguanta 2 errores y al tercero resta tiempo" {
+        3.times({ i => paciente.recibirIngrediente(agua, nivelFalso) })
+        assert.equals(2, nivelFalso.restado())
+    }
+
+    test "al reiniciar, el paciente vuelve a tener paciencia" {
+        3.times({ i => paciente.recibirIngrediente(agua, nivelFalso) })
+        paciente.reiniciar()
+        paciente.recibirIngrediente(agua, nivelFalso)
+        assert.equals(2, nivelFalso.restado())
+    }
+
+    test "el copado suma tiempo por cada acierto" {
+        copado.recibirIngrediente(cafe, nivelFalso)
+        copado.recibirIngrediente(medialunas, nivelFalso)
+        assert.equals(2, nivelFalso.sumado())
+    }
+
+    test "el copado avisa que le falta cuando le dan algo que no pidio" {
+        copado.recibirIngrediente(agua, nivelFalso)
+        assert.equals("No pasa nada, me falta café", nivelFalso.ultimoDicho())
+    }
+}
+
+// estados
+
+describe "estados" {
+    const juegoFalso = new JuegoFalso()
+
+    test "cada estado con boton escucha solo a su boton" {
+        [estadoSinTiempo, estadoCorrecto, estadoFinal].forEach({ estado => estado.procesarClick(juegoFalso, game.at(0, 0)) })
+        assert.equals([botonReintentar, botonSeguir, botonReiniciar], juegoFalso.elementos())
+    }
+
+    test "solo estadoJugando descuenta tiempo" {
+        estadoSinTiempo.pasoUnSegundo(juegoFalso)
+        estadoCorrecto.pasoUnSegundo(juegoFalso)
+        estadoFinal.pasoUnSegundo(juegoFalso)
+        assert.notThat(juegoFalso.nivelActual().tiempoDescontado())
+
+        estadoJugando.pasoUnSegundo(juegoFalso)
+        assert.that(juegoFalso.nivelActual().tiempoDescontado())
+    }
+}
+
+// niveles
+
+describe "niveles" {
+    const escena = new EscenaFalsa()
+    const unCliente = new ClientePaciente(pedido = new Pedido(recetas = [cafeConMedialunas]))
+    const juegoEspia = new JuegoEspia()
+    const nivel = new Nivel(cliente = unCliente, pedido = new Pedido(recetas = [cafeConMedialunas]), escena = escena, reloj = new Temporizador(segundosIniciales = 30), avisarA = juegoEspia)
+
+    test "al iniciar, arranca el reloj y el cliente dice su pedido" {
+        nivel.iniciar()
+        assert.equals(30, nivel.tiempoRestante())
+        assert.equals("Hola, un café con medialunas", escena.ultimoDicho())
+    }
+
+    test "el nivel resta y suma tiempo" {
+        nivel.iniciar()
+        nivel.restarTiempo(5)
+        nivel.sumarTiempo(1)
+        nivel.descontarTiempo()
+        assert.equals(25, nivel.tiempoRestante())
+    }
+
+    test "cuando el tiempo llega a 0, el nivel avisa al juego" {
+        nivel.iniciar()
+        nivel.restarTiempo(100)
+        assert.equals(0, nivel.tiempoRestante())
+        assert.equals(1, juegoEspia.sinTiempos())
+    }
+
+    test "enviar el pedido completo avisa al juego" {
+        nivel.iniciar()
+        nivel.recibirIngrediente(cafe)
+        nivel.recibirIngrediente(medialunas)
+        nivel.enviarPedido()
+        assert.equals(1, juegoEspia.completados())
+    }
+
+    test "enviar el pedido incompleto no avisa nada" {
+        nivel.iniciar()
+        nivel.recibirIngrediente(cafe)
+        nivel.enviarPedido()
+        assert.equals(0, juegoEspia.completados())
+        assert.equals("Mi pedido está incompleto", escena.ultimoDicho())
+    }
+
+    test "al reintentar, el nivel arranca de cero" {
+        nivel.iniciar()
+        nivel.recibirIngrediente(cafe)
+        nivel.recibirIngrediente(medialunas)
+        nivel.enviarPedido()
+        nivel.restarTiempo(10)
+        nivel.iniciar()
+        assert.notThat(unCliente.resultadoCorrecto())
+        assert.equals(30, nivel.tiempoRestante())
+    }
+}
 describe "cliente paciente que pidio cafe y medialunas" {
     const unCliente = new ClientePaciente(
         pedido = [cafe, medialunas],
@@ -78,13 +346,192 @@ test "un cliente paciente no le resta tiempo al nivel al equivocarse" {
     }
     unCliente.recibirIngredientes(agua, nivelPropio)
     assert.equals(0, nivelPropio.restado())
+
 }
 
-test "un ingrediente clickeado se lo entrega al nivel" {
-    var recibido = null
-    const nivelFalso = object {
-        method recibirIngrediente(ingrediente) { recibido = ingrediente }
+describe "fabricaDeNiveles" {
+    test "crea los niveles con las escenas en orden" {
+        const niveles = fabricaDeNiveles.crearNiveles(4, new JuegoEspia())
+        assert.equals([escena1, escena2, escena3, escena1], niveles.map({ nivel => nivel.escena() }))
     }
+
+    test "cada nivel dura menos, pero con un minimo" {
+        assert.equals(30, fabricaDeNiveles.segundosDelNivel(1))
+        assert.equals(28, fabricaDeNiveles.segundosDelNivel(2))
+        assert.equals(10, fabricaDeNiveles.segundosDelNivel(50))
+    }
+}
+
+// flujo del juego
+
+describe "juego" {
+    method completarNivelActual() {
+        estudiante.ingredientesFaltantes().forEach({ ingrediente =>
+            juego.nivelActual().recibirIngrediente(ingrediente)
+        })
+        juego.nivelActual().enviarPedido()
+    }
+
+    test "al completar el pedido, seguir pasa al proximo nivel" {
+        juego.clickPantalla(game.at(0, 0))
+        self.completarNivelActual()
+        juego.clickPantalla(botonSeguir.position())
+        assert.equals(escena2, juego.nivelActual().escena())
+    }
+
+    test "sin tiempo, reintentar repite el nivel" {
+        juego.clickPantalla(game.at(0, 0))
+        juego.nivelActual().restarTiempo(30)
+        juego.clickPantalla(botonReintentar.position())
+        assert.equals(escena1, juego.nivelActual().escena())
+        assert.equals(30, juego.nivelActual().tiempoRestante())
+    }
+
+}
+
+describe "un pedido de una sola receta" {
+    const pedido = new Pedido(recetas = [cafeConMedialunas])
+
+    test "pide los ingredientes de su receta" {
+        assert.equals([cafe, medialunas], pedido.ingredientes())
+        assert.that(pedido.pide(cafe))
+        assert.notThat(pedido.pide(agua))
+    }
+
+    test "se describe con el nombre de la receta" {
+        assert.equals("un café con medialunas", pedido.descripcion())
+    }
+
+    test "se completa cuando recibe todo" {
+        assert.notThat(pedido.estaCompleto())
+        pedido.agregar(cafe)
+        assert.equals([medialunas], pedido.faltantes())
+        pedido.agregar(medialunas)
+        assert.that(pedido.estaCompleto())
+    }
+
+    test "reiniciar lo deja como nuevo" {
+        pedido.agregar(cafe)
+        pedido.reiniciar()
+        assert.notThat(pedido.estaCompleto())
+        assert.equals(2, pedido.faltantes().size())
+    }
+}
+
+describe "un pedido combinado" {
+    const pedido = new Pedido(recetas = [cafeConMedialunas, heladoOreoBanana])
+
+    test "junta los ingredientes de todas sus recetas" {
+        assert.equals(5, pedido.ingredientes().size())
+        assert.that(pedido.pide(cafe))
+        assert.that(pedido.pide(cremaOreo))
+    }
+
+    test "se describe nombrando las dos recetas" {
+        assert.equals("un café con medialunas y un helado de crema Oreo y banana split con jarabe de chocolate", pedido.descripcion())
+    }
+
+    test "necesita todos los ingredientes de las dos recetas para estar completo" {
+        cafeConMedialunas.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.notThat(pedido.estaCompleto())
+        heladoOreoBanana.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.that(pedido.estaCompleto())
+    }
+
+    test "muestra una imagen por receta" {
+        assert.equals(2, pedido.imagenes().size())
+    }
+}
+
+describe "recetas que comparten un ingrediente" {
+    const tostado = new Receta(nombre = "un tostado", rutaImagen = "juegor2/queso.png", ingredientes = [panInferior, queso])
+    const pedido = new Pedido(recetas = [tostado, hamburguesaCompleta])
+
+    test "el ingrediente compartido se pide una sola vez" {
+        assert.equals(6, pedido.ingredientes().size())
+    }
+
+    test "entregarlo una vez alcanza para las dos recetas" {
+        pedido.ingredientes().forEach({ ing => pedido.agregar(ing) })
+        assert.that(pedido.estaCompleto())
+    }
+}
+object sorteadorFijo {
+    method unoDe(opciones) = opciones.first()
+}
+
+describe "el generador arma pedidos" {
+    const generador = new GeneradorDePedidos(carta = carta, sorteador = sorteadorFijo)
+
+    test "las recetas del pedido salen de la carta" {
+        const pedido = generador.generar(1)
+        assert.equals(1, pedido.recetas().size())
+        assert.that(carta.recetas().contains(pedido.recetas().first()))
+    }
+
+    test "no repite recetas en un mismo pedido" {
+        const pedido = generador.generar(3)
+        assert.equals(3, pedido.recetas().size())
+        assert.equals(3, pedido.recetas().asSet().size())
+    }
+
+    test "nunca pide mas recetas que las que hay en la carta" {
+        assert.equals(carta.recetas().size(), generador.generar(10).recetas().size())
+    }
+
+    test "cada pedido es nuevo, no el mismo de siempre" {
+        assert.notThat(generador.generar(1) == generador.generar(1))
+    }
+
+    test "con un sorteador que no sortea, el pedido es previsible" {
+        assert.equals([carta.recetas().first()], generador.generar(1).recetas())
+    }
+
+    test "el generador tambien funciona con el azar de verdad" {
+        const alAzar = new GeneradorDePedidos(carta = carta, sorteador = azar)
+        assert.that(carta.recetas().contains(alAzar.generar(1).recetas().first()))
+    }
+}
+
+describe "un cliente atiende un pedido distinto en cada nivel" {
+    const cliente = new ClientePaciente()
+
+    test "toma el pedido que le da el nivel" {
+        cliente.atender(new Pedido(recetas = [cafeConMedialunas]))
+        assert.equals([cafe, medialunas], cliente.ingredientesPedidos())
+        cliente.atender(new Pedido(recetas = [heladoOreoBanana]))
+        assert.equals([cremaOreo, bananaSplit, jarabeChocolate], cliente.ingredientesPedidos())
+    }
+
+    test "al atender un pedido nuevo se olvida de lo que ya habia entregado" {
+        const unPedido = new Pedido(recetas = [cafeConMedialunas])
+        cliente.atender(unPedido)
+        unPedido.agregar(cafe)
+        cliente.atender(unPedido)
+        assert.equals([cafe, medialunas], cliente.ingredientesFaltantes())
+    }
+
+}
+
+describe "la fabrica reparte los pedidos de cada nivel" {
+    test "el primer nivel pide una sola receta" {
+        assert.equals(1, fabricaDeNiveles.recetasDelNivel(1))
+    }
+
+    test "cada dos niveles se suma una receta" {
+        assert.equals(1, fabricaDeNiveles.recetasDelNivel(2))
+        assert.equals(2, fabricaDeNiveles.recetasDelNivel(3))
+        assert.equals(2, fabricaDeNiveles.recetasDelNivel(4))
+        assert.equals(3, fabricaDeNiveles.recetasDelNivel(5))
+    }
+
+    test "el nivel arranca con el pedido puesto y la escena armada" {
+        const nivel = fabricaDeNiveles.nivelNumero(1, new JuegoEspia())
+        nivel.iniciar()
+        assert.equals(1, nivel.visuales().filter({ visual => carta.recetas().contains(visual) }).size())
+    }
+
     cafe.clickear(nivelFalso)
     assert.equals(cafe, recibido)
+
 }

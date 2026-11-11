@@ -3,9 +3,9 @@
 Una cafetería en apuros es un juego desarrollado en Wollok Game en el cual se deberá ayudar a preparar los pedidos de distintos clientes seleccionando
 correctamente los ingredientes antes de que termine el tiempo.
 
-El juego actualmente consta de 3 niveles, a medida que se avanza los pedidos se vuelven mas difíciles y tenes menos tiempo para completarlos.
+El juego actualmente consta de 3 niveles. A medida que se avanza, los pedidos se vuelven más difíciles y tenés menos tiempo para completarlos: el tiempo baja de a 2 segundos por nivel.
 
-
+Los pedidos se sortean de la carta (café con medialunas, hamburguesa completa o helado) cada vez que empieza una partida.
 
 ## 👥 Integrantes
 
@@ -14,6 +14,19 @@ El juego actualmente consta de 3 niveles, a medida que se avanza los pedidos se 
 * Néstor Emmanuel Farinella
 * Joan Mendieta
 * Guadalupe Asurmendi
+
+<h1 align="center">🙋 Tipos de cliente 🙋</h1>
+
+
+
+
+Todos los clientes piden ingredientes y se atienden igual, pero cada tipo reacciona distinto cuando le das un ingrediente equivocado o repetido, y cuando acertás.
+
+| Tipo | Cómo reacciona |
+|---|---|
+| **Exigente** | Cada error o ingrediente repetido le resta tiempo, y cada vez más (3, 5, 7 segundos...). |
+| **Paciente** | Aguanta 2 errores sin molestarse. Desde el tercero, cada error le resta 2 segundos. |
+| **Copado** | Nunca te quita tiempo: te avisa qué le falta y te regala 1 segundo por cada acierto. |
 
 
 
@@ -27,6 +40,7 @@ El juego actualmente consta de 3 niveles, a medida que se avanza los pedidos se 
 📋Pedido: Cafe con medialunas ☕🥐.
 
 El estudiante esta a punto de entrar a cursa PDP y necesita desayunar para sobrevivir a la primera clase de objetos.
+
 
 ## Nivel 2: Maria 👩
 

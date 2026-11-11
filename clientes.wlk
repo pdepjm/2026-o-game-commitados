@@ -139,6 +139,6 @@ class ClienteCopado inherits Cliente {
 }
 
 // CLIENTES DEL JUEGO
-const estudiante = new ClienteExigente()
-const maria = new ClientePaciente()
-const matias = new ClienteCopado()
+// const estudiante = new ClienteExigente()
+// const maria = new ClientePaciente()
+// const matias = new ClienteCopado()

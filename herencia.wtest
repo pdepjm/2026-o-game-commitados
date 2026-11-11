@@ -1,0 +1,141 @@
+import wollok.game.*
+import ingredientes.*
+import clientes.*
+import niveles.*
+
+object nivelFalso {
+    var restado = 0
+    var tiempoDescontado = false
+
+    method restado() = restado
+    method tiempoDescontado() = tiempoDescontado
+
+    method restarTiempo(cantidad) {
+        restado = restado + cantidad
+    }
+
+    method descontarTiempo() {
+        tiempoDescontado = true
+    }
+
+    method reiniciar() {
+        restado = 0
+        tiempoDescontado = false
+    }
+}
+
+test "un ingrediente hereda de Visual su imagen y su posicion, y agrega su nombre" {
+    assert.equals("juegor1/cafe.png", cafe.image())
+    assert.equals(5, cafe.position().x())
+    assert.equals(0, cafe.position().y())
+    assert.equals("cafe", cafe.nombre())
+}
+
+test "las subclases de Visual traen su posicion por defecto" {
+    const unEstudiante = new EstudianteSentado(rutaImagen = "estudiante.png")
+    const unPedido = new PedidoReferencia(rutaImagen = "pedido.png")
+    const unaPantalla = new PantallaResultado(rutaImagen = "resultado.png")
+    assert.equals(game.at(6, 2).x(), unEstudiante.position().x())
+    assert.equals(game.at(6, 2).y(), unEstudiante.position().y())
+    assert.equals(game.at(8, 2).x(), unPedido.position().x())
+    assert.equals(game.at(8, 2).y(), unPedido.position().y())
+    assert.equals(game.origin().x(), unaPantalla.position().x())
+    assert.equals(game.origin().y(), unaPantalla.position().y())
+}
+
+describe "clientes" {
+    const paciente = new ClientePaciente(
+        pedido = [cafe, medialunas],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const exigente = new ClienteExigente(
+        pedido = [cafe, medialunas],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const copado = new ClienteCopado(
+        pedido = [cafe, medialunas],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const clientes = [paciente, exigente, copado]
+
+    test "todas las subclases de Cliente heredan la logica del pedido" {
+        clientes.forEach({ cliente => cliente.recibirIngredientes(cafe, nivelFalso) })
+        assert.that(clientes.all({ cliente => not cliente.resultadoCorrecto() }))
+        clientes.forEach({ cliente => cliente.recibirIngredientes(medialunas, nivelFalso) })
+        assert.that(clientes.all({ cliente => cliente.resultadoCorrecto() }))
+        clientes.forEach({ cliente => cliente.reiniciar() })
+        assert.that(clientes.all({ cliente => not cliente.resultadoCorrecto() }))
+    }
+
+    test "cada subclase redefine reaccionarAlError: solo el exigente resta tiempo" {
+        paciente.recibirIngredientes(agua, nivelFalso)
+        copado.recibirIngredientes(agua, nivelFalso)
+        assert.equals(0, nivelFalso.restado())
+        exigente.recibirIngredientes(agua, nivelFalso)
+        assert.equals(5, nivelFalso.restado())
+    }
+}
+
+test "los estados con boton heredan que el tiempo no corre, pero estadoJugando si lo descuenta" {
+    nivelFalso.reiniciar()
+
+    estadoSinTiempo.pasoUnSegundo(nivelFalso)
+    estadoCorrecto.pasoUnSegundo(nivelFalso)
+    estadoFinal.pasoUnSegundo(nivelFalso)
+    assert.notThat(nivelFalso.tiempoDescontado())
+
+    estadoJugando.pasoUnSegundo(nivelFalso)
+    assert.that(nivelFalso.tiempoDescontado())
+}
+
+describe "niveles" {
+    const unCliente = new ClientePaciente(
+        pedido = [cafe],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const nivelNormal = new Nivel(
+        cliente = unCliente,
+        listaIngredientes = [cafe, agua],
+        pedidoCorrecto = pedidoCorrecto1,
+        pedidoFueraDeTiempo = pedidoFueraDeTiempo1
+    )
+    const nivelFinal = new NivelFinal(
+        cliente = unCliente,
+        listaIngredientes = [cafe, agua],
+        pedidoCorrecto = pedidoCorrecto1,
+        pedidoFueraDeTiempo = pedidoFueraDeTiempo1
+    )
+
+    test "un nivel final hereda de Nivel el manejo del tiempo" {
+        nivelFinal.iniciarPartida()
+        nivelFinal.restarTiempo(5)
+        nivelFinal.descontarTiempo()
+        assert.equals(24, nivelFinal.tiempoRestante())
+    }
+
+    test "un nivel comun, al completar el pedido, pasa a estadoCorrecto" {
+        nivelNormal.iniciarPartida()
+        nivelNormal.alCompletarPedido()
+        assert.equals(estadoCorrecto, nivelNormal.estado())
+    }
+
+    test "un nivel final redefine alCompletarPedido y pasa a estadoFinal" {
+        nivelFinal.iniciarPartida()
+        nivelFinal.alCompletarPedido()
+        assert.equals(estadoFinal, nivelFinal.estado())
+    }
+}
+
+test "los niveles estan encadenados 1, 2, 3 y el ultimo no tiene siguiente" {
+    assert.equals(nivel2, nivel1.siguiente())
+    assert.equals(nivel3, nivel2.siguiente())
+    assert.that(nivel3.siguiente() == null)
+}

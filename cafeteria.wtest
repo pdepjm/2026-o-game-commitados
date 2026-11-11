@@ -86,6 +86,7 @@ test "un visual se puede mover de lugar" {
 describe "la grilla reparte lugares" {
     const grilla = new Grilla(columnas = [1, 2], filas = [5, 4])
 
+
     test "sus celdas van fila por fila, de izquierda a derecha" {
         assert.equals(4, grilla.capacidad())
         assert.equals([1, 2, 1, 2], grilla.celdas().map({ celda => celda.x() }))
@@ -275,6 +276,77 @@ describe "niveles" {
         assert.notThat(unCliente.resultadoCorrecto())
         assert.equals(30, nivel.tiempoRestante())
     }
+
+describe "cliente paciente que pidio cafe y medialunas" {
+    const unCliente = new ClientePaciente(
+        pedido = [cafe, medialunas],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+
+    test "recien creado no tiene el pedido completo" {
+        assert.notThat(unCliente.resultadoCorrecto())
+    }
+
+    test "el pedido se completa cuando llega todo lo pedido" {
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
+        unCliente.recibirIngredientes(medialunas, nivelDePrueba)
+        assert.that(unCliente.resultadoCorrecto())
+    }
+
+    test "recibir dos veces el mismo ingrediente no completa el pedido" {
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
+    }
+
+    test "un ingrediente que no pidio no cuenta para el pedido" {
+        unCliente.recibirIngredientes(agua, nivelDePrueba)
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        assert.notThat(unCliente.resultadoCorrecto())
+    }
+
+    test "reiniciar limpia lo entregado" {
+        unCliente.recibirIngredientes(cafe, nivelDePrueba)
+        unCliente.recibirIngredientes(medialunas, nivelDePrueba)
+        unCliente.reiniciar()
+        assert.notThat(unCliente.resultadoCorrecto())
+    }
+}
+
+test "un cliente exigente le resta 5 segundos al nivel al equivocarse" {
+    const unCliente = new ClienteExigente(
+        pedido = [cafe],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const nivelPropio = object {
+        var restado = 0
+        method restarTiempo(cantidad) { restado = cantidad }
+        method restado() = restado
+    }
+    unCliente.recibirIngredientes(agua, nivelPropio)
+    assert.equals(5, nivelPropio.restado())
+}
+
+test "un cliente paciente no le resta tiempo al nivel al equivocarse" {
+    const unCliente = new ClientePaciente(
+        pedido = [cafe],
+        mensaje = "Hola",
+        estudianteEnMostrador = estudianteMostrador,
+        pedidoReferencia = pedidoReferencia1
+    )
+    const nivelPropio = object {
+        var restado = 0
+        method restarTiempo(cantidad) { restado = cantidad }
+        method restado() = restado
+    }
+    unCliente.recibirIngredientes(agua, nivelPropio)
+    assert.equals(0, nivelPropio.restado())
+
 }
 
 describe "fabricaDeNiveles" {
@@ -438,6 +510,7 @@ describe "un cliente atiende un pedido distinto en cada nivel" {
         cliente.atender(unPedido)
         assert.equals([cafe, medialunas], cliente.ingredientesFaltantes())
     }
+
 }
 
 describe "la fabrica reparte los pedidos de cada nivel" {
@@ -457,4 +530,8 @@ describe "la fabrica reparte los pedidos de cada nivel" {
         nivel.iniciar()
         assert.equals(1, nivel.visuales().filter({ visual => carta.recetas().contains(visual) }).size())
     }
+
+    cafe.clickear(nivelFalso)
+    assert.equals(cafe, recibido)
+
 }

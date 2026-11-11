@@ -1,11 +1,21 @@
+
+import wollok.game.*    
+import visuales.*
 import ingredientes.*
 import pedidos.*
 import recetas.* 
 
 
+
 class Cliente {
 
     var property pedido = null
+
+object mostrador inherits Visual(rutaImagen = "fondos/fondo_Mostrador.png", posicion = game.origin()) { }
+
+// Estudiantes sentados: son un Visual que por defecto aparece en la celda (6, 2)
+class EstudianteSentado inherits Visual(posicion = game.at(6, 2)) { }
+
 
     // Cada personalidad puede redefinir su saludo
     method saludo() = "Hola,"
@@ -24,6 +34,7 @@ class Cliente {
 
     method reaccionarAlError(nivel)
 
+
     method reaccionarAlRepetido(nivel) { nivel.decir("Ya me lo diste") }
     method reaccionarAlCorrecto(nivel) { nivel.decir("Bien") }
     method reaccionarAlPedidoIncompleto(nivel) { nivel.decir("Mi pedido está incompleto") }
@@ -31,12 +42,17 @@ class Cliente {
     method ingredientesPedidos() = pedido.ingredientes()
     method recetasPedidas() = pedido.recetas()
 
+// Pedidos de referencias: vusual que por defecto aparece en la celda (8, 2)
+class PedidoReferencia inherits Visual(posicion = game.at(8, 2)) { }
+
+
     // ingredientes que todavía no recibio
     method ingredientesFaltantes() = pedido.faltantes()
 
     method reiniciar() {
         pedido.reiniciar()
     }
+
 
     method resultadoCorrecto() = pedido.estaCompleto()
 
@@ -81,6 +97,15 @@ class ClienteExigente inherits Cliente {
     override method reaccionarAlError(nivel) {
         self.penalizar("¡Eso no lo pedí!", nivel)
     }
+
+// CLIENTES
+class Cliente {
+    const pedido
+    const mensaje
+    const property estudianteEnMostrador
+    const property pedidoReferencia
+    const entregado = []
+
 
     override method reaccionarAlRepetido(nivel) {
         self.penalizar("¡Eso ya me lo diste!", nivel)

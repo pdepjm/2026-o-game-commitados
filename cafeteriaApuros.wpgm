@@ -1,0 +1,28 @@
+import wollok.game.*
+import juego.*
+import sonidos.*
+
+program cafeteriaApuros {
+
+    // configuración de la pantalla
+    game.width(16)
+    game.height(9)
+    game.cellSize(100)
+
+    game.title("Cafetería En Apuros")
+
+    // pantalla de inicio (la dibuja el juego)
+    juego.mostrarIntro()
+
+    // Cada vez que se hace click en pantalla se ejecuta juego.clickPantalla(pos)
+    game.onClickDo({ pos => juego.clickPantalla(pos) })
+
+    // Cada 1 segundo (1000 ms) se ejecuta juego.pasoUnSegundo()
+    game.onTick(1000, "tiempo", { juego.pasoUnSegundo() })
+
+    // Música del juego (si ya estaba iniciada, no hace nada)
+    game.schedule(100, { sonidos.iniciarMusica() })
+
+    // COMIENZA EL JUEGO
+    game.start()
+}
